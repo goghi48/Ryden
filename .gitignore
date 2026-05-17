@@ -1,0 +1,18 @@
+@"
+# IDE
+.idea/
+*.iml
+
+# Personal notes
+notes/
+
+# Go build/test
+*.exe
+*.test
+*.out
+coverage.out
+
+# OS
+.DS_Store
+Thumbs.db
+"@ | Set-Content -Encoding UTF8 .gitignore
