@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -30,7 +31,7 @@ func validCreatePlaceInput() CreatePlaceInput {
 func mustCreatePlace(t *testing.T, placeService *PlaceService, input CreatePlaceInput) domain.Place {
 	t.Helper()
 
-	place, err := placeService.CreatePlace(input)
+	place, err := placeService.CreatePlace(context.Background(), input)
 	if err != nil {
 		t.Fatalf("expected no error while creating place, got %v", err)
 	}
@@ -42,7 +43,7 @@ func TestPlaceService_CreatePlace_Success(t *testing.T) {
 	placeService := newTestPlaceService(t)
 	input := validCreatePlaceInput()
 
-	place, err := placeService.CreatePlace(input)
+	place, err := placeService.CreatePlace(context.Background(), input)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -119,7 +120,7 @@ func TestPlaceService_CreatePlace_ValidationErrors(t *testing.T) {
 
 			tt.mutateInput(&input)
 
-			_, err := placeService.CreatePlace(input)
+			_, err := placeService.CreatePlace(context.Background(), input)
 			if err == nil {
 				t.Fatal("expected error, got nil")
 			}
@@ -137,7 +138,7 @@ func TestPlaceService_GetPlace_Success(t *testing.T) {
 
 	createdPlace := mustCreatePlace(t, placeService, input)
 
-	foundPlace, err := placeService.GetPlace(createdPlace.ID)
+	foundPlace, err := placeService.GetPlace(context.Background(), createdPlace.ID)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -154,7 +155,7 @@ func TestPlaceService_GetPlace_Success(t *testing.T) {
 func TestPlaceService_GetPlace_NotFound(t *testing.T) {
 	placeService := newTestPlaceService(t)
 
-	_, err := placeService.GetPlace("not-existing-id")
+	_, err := placeService.GetPlace(context.Background(), "not-existing-id")
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -178,7 +179,7 @@ func TestPlaceService_ListPlaces_FiltersByCity(t *testing.T) {
 	mustCreatePlace(t, placeService, moscowInput)
 	mustCreatePlace(t, placeService, novosibirskInput)
 
-	places, err := placeService.ListPlaces("Moscow", 10)
+	places, err := placeService.ListPlaces(context.Background(), "Moscow", 10)
 	if err != nil {
 		t.Fatalf("expected no error while listing places, got %v", err)
 	}
@@ -206,7 +207,7 @@ func TestPlaceService_ListPlaces_RespectsLimit(t *testing.T) {
 	mustCreatePlace(t, placeService, firstInput)
 	mustCreatePlace(t, placeService, secondInput)
 
-	places, err := placeService.ListPlaces("", 1)
+	places, err := placeService.ListPlaces(context.Background(), "", 1)
 	if err != nil {
 		t.Fatalf("expected no error while listing places, got %v", err)
 	}

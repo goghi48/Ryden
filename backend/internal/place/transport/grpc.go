@@ -35,7 +35,7 @@ func (h *Handler) CreatePlace(
 		CreatedByUserID: req.GetCreatedByUserId(),
 	}
 
-	place, err := h.placeService.CreatePlace(input)
+	place, err := h.placeService.CreatePlace(ctx, input)
 
 	if err != nil {
 		return nil, mapErrorToStatus(err)
@@ -81,7 +81,7 @@ func (h *Handler) GetPlace(
 	ctx context.Context,
 	req *placesv1.GetPlaceRequest,
 ) (*placesv1.GetPlaceResponse, error) {
-	place, err := h.placeService.GetPlace(req.GetId())
+	place, err := h.placeService.GetPlace(ctx, req.GetId())
 
 	if err != nil {
 		return nil, mapErrorToStatus(err)
@@ -96,7 +96,7 @@ func (h *Handler) ListPlaces(
 	ctx context.Context,
 	req *placesv1.ListPlacesRequest,
 ) (*placesv1.ListPlacesResponse, error) {
-	places, err := h.placeService.ListPlaces(req.GetCity(), int(req.GetLimit()))
+	places, err := h.placeService.ListPlaces(ctx, req.GetCity(), int(req.GetLimit()))
 	if err != nil {
 		return nil, mapErrorToStatus(err)
 	}

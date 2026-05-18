@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -9,9 +10,9 @@ import (
 )
 
 type PlaceStorage interface {
-	Create(place domain.Place) error
-	GetByID(id string) (domain.Place, error)
-	List(city string, limit int) ([]domain.Place, error)
+	Create(ctx context.Context, place domain.Place) error
+	GetByID(ctx context.Context, id string) (domain.Place, error)
+	List(ctx context.Context, city string, limit int) ([]domain.Place, error)
 }
 
 type PlaceService struct {
@@ -22,7 +23,7 @@ func NewPlaceService(storage PlaceStorage) *PlaceService {
 	return &PlaceService{storage: storage}
 }
 
-func (s *PlaceService) CreatePlace(input CreatePlaceInput) (domain.Place, error) {
+func (s *PlaceService) CreatePlace(ctx context.Context, input CreatePlaceInput) (domain.Place, error) {
 	if err := validateCreatePlaceInput(input); err != nil {
 		return domain.Place{}, err
 	}
@@ -44,7 +45,7 @@ func (s *PlaceService) CreatePlace(input CreatePlaceInput) (domain.Place, error)
 		UpdatedAt:       now,
 	}
 
-	err := s.storage.Create(place)
+	err := s.storage.Create(ctx, place)
 	if err != nil {
 		return domain.Place{}, err
 	}
@@ -52,8 +53,8 @@ func (s *PlaceService) CreatePlace(input CreatePlaceInput) (domain.Place, error)
 	return place, nil
 }
 
-func (s *PlaceService) GetPlace(id string) (domain.Place, error) {
-	place, err := s.storage.GetByID(id)
+func (s *PlaceService) GetPlace(ctx context.Context, id string) (domain.Place, error) {
+	place, err := s.storage.GetByID(ctx, id)
 
 	if err != nil {
 		return domain.Place{}, err
@@ -61,8 +62,8 @@ func (s *PlaceService) GetPlace(id string) (domain.Place, error) {
 	return place, nil
 }
 
-func (s *PlaceService) ListPlaces(city string, limit int) ([]domain.Place, error) {
-	places, err := s.storage.List(city, limit)
+func (s *PlaceService) ListPlaces(ctx context.Context, city string, limit int) ([]domain.Place, error) {
+	places, err := s.storage.List(ctx, city, limit)
 
 	if err != nil {
 		return nil, err

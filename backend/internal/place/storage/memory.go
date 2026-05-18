@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"sync"
 
 	"github.com/goghi48/ryden/internal/place/domain"
@@ -17,7 +18,7 @@ func NewMemoryStorage() *MemoryStorage {
 	}
 }
 
-func (s *MemoryStorage) Create(place domain.Place) error {
+func (s *MemoryStorage) Create(ctx context.Context, place domain.Place) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -29,7 +30,7 @@ func (s *MemoryStorage) Create(place domain.Place) error {
 	return nil
 }
 
-func (s *MemoryStorage) GetByID(id string) (domain.Place, error) {
+func (s *MemoryStorage) GetByID(ctx context.Context, id string) (domain.Place, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -41,7 +42,7 @@ func (s *MemoryStorage) GetByID(id string) (domain.Place, error) {
 	return place, nil
 }
 
-func (s *MemoryStorage) List(city string, limit int) ([]domain.Place, error) {
+func (s *MemoryStorage) List(ctx context.Context, city string, limit int) ([]domain.Place, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
