@@ -86,6 +86,7 @@ type CreatePlaceRequest struct {
 	Latitude        float64                `protobuf:"fixed64,5,opt,name=latitude,proto3" json:"latitude,omitempty"`
 	Longitude       float64                `protobuf:"fixed64,6,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	CreatedByUserId string                 `protobuf:"bytes,7,opt,name=created_by_user_id,json=createdByUserId,proto3" json:"created_by_user_id,omitempty"`
+	CategoryIds     []string               `protobuf:"bytes,8,rep,name=category_ids,json=categoryIds,proto3" json:"category_ids,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -167,6 +168,13 @@ func (x *CreatePlaceRequest) GetCreatedByUserId() string {
 		return x.CreatedByUserId
 	}
 	return ""
+}
+
+func (x *CreatePlaceRequest) GetCategoryIds() []string {
+	if x != nil {
+		return x.CategoryIds
+	}
+	return nil
 }
 
 type CreatePlaceResponse struct {
@@ -397,6 +405,74 @@ func (x *ListPlacesResponse) GetPlaces() []*Place {
 	return nil
 }
 
+type Category struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Slug          string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Category) Reset() {
+	*x = Category{}
+	mi := &file_ryden_places_v1_places_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Category) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Category) ProtoMessage() {}
+
+func (x *Category) ProtoReflect() protoreflect.Message {
+	mi := &file_ryden_places_v1_places_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Category.ProtoReflect.Descriptor instead.
+func (*Category) Descriptor() ([]byte, []int) {
+	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Category) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Category) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Category) GetSlug() string {
+	if x != nil {
+		return x.Slug
+	}
+	return ""
+}
+
+func (x *Category) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
 type Place struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -410,13 +486,14 @@ type Place struct {
 	Status          PlaceStatus            `protobuf:"varint,9,opt,name=status,proto3,enum=ryden.places.v1.PlaceStatus" json:"status,omitempty"`
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Categories      []*Category            `protobuf:"bytes,12,rep,name=categories,proto3" json:"categories,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Place) Reset() {
 	*x = Place{}
-	mi := &file_ryden_places_v1_places_proto_msgTypes[6]
+	mi := &file_ryden_places_v1_places_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -428,7 +505,7 @@ func (x *Place) String() string {
 func (*Place) ProtoMessage() {}
 
 func (x *Place) ProtoReflect() protoreflect.Message {
-	mi := &file_ryden_places_v1_places_proto_msgTypes[6]
+	mi := &file_ryden_places_v1_places_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -441,7 +518,7 @@ func (x *Place) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Place.ProtoReflect.Descriptor instead.
 func (*Place) Descriptor() ([]byte, []int) {
-	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{6}
+	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Place) GetId() string {
@@ -521,11 +598,18 @@ func (x *Place) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Place) GetCategories() []*Category {
+	if x != nil {
+		return x.Categories
+	}
+	return nil
+}
+
 var File_ryden_places_v1_places_proto protoreflect.FileDescriptor
 
 const file_ryden_places_v1_places_proto_rawDesc = "" +
 	"\n" +
-	"\x1cryden/places/v1/places.proto\x12\x0fryden.places.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe1\x01\n" +
+	"\x1cryden/places/v1/places.proto\x12\x0fryden.places.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x84\x02\n" +
 	"\x12CreatePlaceRequest\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x18\n" +
@@ -533,7 +617,8 @@ const file_ryden_places_v1_places_proto_rawDesc = "" +
 	"\x04city\x18\x04 \x01(\tR\x04city\x12\x1a\n" +
 	"\blatitude\x18\x05 \x01(\x01R\blatitude\x12\x1c\n" +
 	"\tlongitude\x18\x06 \x01(\x01R\tlongitude\x12+\n" +
-	"\x12created_by_user_id\x18\a \x01(\tR\x0fcreatedByUserId\"C\n" +
+	"\x12created_by_user_id\x18\a \x01(\tR\x0fcreatedByUserId\x12!\n" +
+	"\fcategory_ids\x18\b \x03(\tR\vcategoryIds\"C\n" +
 	"\x13CreatePlaceResponse\x12,\n" +
 	"\x05place\x18\x01 \x01(\v2\x16.ryden.places.v1.PlaceR\x05place\"!\n" +
 	"\x0fGetPlaceRequest\x12\x0e\n" +
@@ -544,7 +629,13 @@ const file_ryden_places_v1_places_proto_rawDesc = "" +
 	"\x04city\x18\x01 \x01(\tR\x04city\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\"D\n" +
 	"\x12ListPlacesResponse\x12.\n" +
-	"\x06places\x18\x01 \x03(\v2\x16.ryden.places.v1.PlaceR\x06places\"\x90\x03\n" +
+	"\x06places\x18\x01 \x03(\v2\x16.ryden.places.v1.PlaceR\x06places\"}\n" +
+	"\bCategory\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04slug\x18\x03 \x01(\tR\x04slug\x129\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xcb\x03\n" +
 	"\x05Place\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
@@ -559,7 +650,10 @@ const file_ryden_places_v1_places_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt*\x9d\x01\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x129\n" +
+	"\n" +
+	"categories\x18\f \x03(\v2\x19.ryden.places.v1.CategoryR\n" +
+	"categories*\x9d\x01\n" +
 	"\vPlaceStatus\x12\x1c\n" +
 	"\x18PLACE_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bPLACE_STATUS_PENDING_REVIEW\x10\x01\x12\x19\n" +
@@ -585,7 +679,7 @@ func file_ryden_places_v1_places_proto_rawDescGZIP() []byte {
 }
 
 var file_ryden_places_v1_places_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_ryden_places_v1_places_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_ryden_places_v1_places_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_ryden_places_v1_places_proto_goTypes = []any{
 	(PlaceStatus)(0),              // 0: ryden.places.v1.PlaceStatus
 	(*CreatePlaceRequest)(nil),    // 1: ryden.places.v1.CreatePlaceRequest
@@ -594,27 +688,30 @@ var file_ryden_places_v1_places_proto_goTypes = []any{
 	(*GetPlaceResponse)(nil),      // 4: ryden.places.v1.GetPlaceResponse
 	(*ListPlacesRequest)(nil),     // 5: ryden.places.v1.ListPlacesRequest
 	(*ListPlacesResponse)(nil),    // 6: ryden.places.v1.ListPlacesResponse
-	(*Place)(nil),                 // 7: ryden.places.v1.Place
-	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
+	(*Category)(nil),              // 7: ryden.places.v1.Category
+	(*Place)(nil),                 // 8: ryden.places.v1.Place
+	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
 }
 var file_ryden_places_v1_places_proto_depIdxs = []int32{
-	7, // 0: ryden.places.v1.CreatePlaceResponse.place:type_name -> ryden.places.v1.Place
-	7, // 1: ryden.places.v1.GetPlaceResponse.place:type_name -> ryden.places.v1.Place
-	7, // 2: ryden.places.v1.ListPlacesResponse.places:type_name -> ryden.places.v1.Place
-	0, // 3: ryden.places.v1.Place.status:type_name -> ryden.places.v1.PlaceStatus
-	8, // 4: ryden.places.v1.Place.created_at:type_name -> google.protobuf.Timestamp
-	8, // 5: ryden.places.v1.Place.updated_at:type_name -> google.protobuf.Timestamp
-	1, // 6: ryden.places.v1.PlaceService.CreatePlace:input_type -> ryden.places.v1.CreatePlaceRequest
-	3, // 7: ryden.places.v1.PlaceService.GetPlace:input_type -> ryden.places.v1.GetPlaceRequest
-	5, // 8: ryden.places.v1.PlaceService.ListPlaces:input_type -> ryden.places.v1.ListPlacesRequest
-	2, // 9: ryden.places.v1.PlaceService.CreatePlace:output_type -> ryden.places.v1.CreatePlaceResponse
-	4, // 10: ryden.places.v1.PlaceService.GetPlace:output_type -> ryden.places.v1.GetPlaceResponse
-	6, // 11: ryden.places.v1.PlaceService.ListPlaces:output_type -> ryden.places.v1.ListPlacesResponse
-	9, // [9:12] is the sub-list for method output_type
-	6, // [6:9] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	8,  // 0: ryden.places.v1.CreatePlaceResponse.place:type_name -> ryden.places.v1.Place
+	8,  // 1: ryden.places.v1.GetPlaceResponse.place:type_name -> ryden.places.v1.Place
+	8,  // 2: ryden.places.v1.ListPlacesResponse.places:type_name -> ryden.places.v1.Place
+	9,  // 3: ryden.places.v1.Category.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 4: ryden.places.v1.Place.status:type_name -> ryden.places.v1.PlaceStatus
+	9,  // 5: ryden.places.v1.Place.created_at:type_name -> google.protobuf.Timestamp
+	9,  // 6: ryden.places.v1.Place.updated_at:type_name -> google.protobuf.Timestamp
+	7,  // 7: ryden.places.v1.Place.categories:type_name -> ryden.places.v1.Category
+	1,  // 8: ryden.places.v1.PlaceService.CreatePlace:input_type -> ryden.places.v1.CreatePlaceRequest
+	3,  // 9: ryden.places.v1.PlaceService.GetPlace:input_type -> ryden.places.v1.GetPlaceRequest
+	5,  // 10: ryden.places.v1.PlaceService.ListPlaces:input_type -> ryden.places.v1.ListPlacesRequest
+	2,  // 11: ryden.places.v1.PlaceService.CreatePlace:output_type -> ryden.places.v1.CreatePlaceResponse
+	4,  // 12: ryden.places.v1.PlaceService.GetPlace:output_type -> ryden.places.v1.GetPlaceResponse
+	6,  // 13: ryden.places.v1.PlaceService.ListPlaces:output_type -> ryden.places.v1.ListPlacesResponse
+	11, // [11:14] is the sub-list for method output_type
+	8,  // [8:11] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_ryden_places_v1_places_proto_init() }
@@ -628,7 +725,7 @@ func file_ryden_places_v1_places_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ryden_places_v1_places_proto_rawDesc), len(file_ryden_places_v1_places_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -21,6 +21,7 @@ type Place struct {
 	Longitude       float64
 	CreatedByUserID string
 	Status          PlaceStatus
+	Categories      []Category
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }

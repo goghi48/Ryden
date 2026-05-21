@@ -10,7 +10,6 @@ service PlaceService {
   rpc CreatePlace (CreatePlaceRequest) returns (CreatePlaceResponse);
   rpc GetPlace (GetPlaceRequest) returns (GetPlaceResponse);
   rpc ListPlaces (ListPlacesRequest) returns (ListPlacesResponse);
-
 }
 
 message CreatePlaceRequest {
@@ -21,6 +20,7 @@ message CreatePlaceRequest {
   double latitude = 5;
   double longitude = 6;
   string created_by_user_id = 7;
+  repeated string category_ids = 8;
 }
 
 message CreatePlaceResponse {
@@ -44,6 +44,13 @@ message ListPlacesResponse {
   repeated Place places = 1;
 }
 
+message Category {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
 message Place {
   string id = 1;
   string title = 2;
@@ -56,15 +63,13 @@ message Place {
   PlaceStatus status = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
+  repeated Category categories = 12;
 }
 
 enum PlaceStatus {
-    PLACE_STATUS_UNSPECIFIED = 0;
-    PLACE_STATUS_PENDING_REVIEW = 1;
-    PLACE_STATUS_APPROVED = 2;
-    PLACE_STATUS_REJECTED = 3;
-    PLACE_STATUS_ARCHIVED = 4;
+  PLACE_STATUS_UNSPECIFIED = 0;
+  PLACE_STATUS_PENDING_REVIEW = 1;
+  PLACE_STATUS_APPROVED = 2;
+  PLACE_STATUS_REJECTED = 3;
+  PLACE_STATUS_ARCHIVED = 4;
 }
-
-
-

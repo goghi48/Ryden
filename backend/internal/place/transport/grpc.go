@@ -33,6 +33,7 @@ func (h *Handler) CreatePlace(
 		Latitude:        req.GetLatitude(),
 		Longitude:       req.GetLongitude(),
 		CreatedByUserID: req.GetCreatedByUserId(),
+		CategoryIDs:     req.GetCategoryIds(),
 	}
 
 	place, err := h.placeService.CreatePlace(ctx, input)
@@ -57,6 +58,7 @@ func placeToProto(place domain.Place) *placesv1.Place {
 		Longitude:       place.Longitude,
 		CreatedByUserId: place.CreatedByUserID,
 		Status:          placeStatusToProto(place.Status),
+		Categories:      categoriesToProto(place.Categories),
 		CreatedAt:       timestamppb.New(place.CreatedAt),
 		UpdatedAt:       timestamppb.New(place.UpdatedAt),
 	}
@@ -110,4 +112,23 @@ func (h *Handler) ListPlaces(
 	return &placesv1.ListPlacesResponse{
 		Places: protoPlaces,
 	}, nil
+}
+
+func categoriesToProto(categories []domain.Category) []*placesv1.Category {
+	protoCategories := make([]*placesv1.Category, len(categories))
+
+	for i, category := range categories {
+		protoCategories[i] = categoryToProto(category)
+	}
+
+	return protoCategories
+}
+
+func categoryToProto(category domain.Category) *placesv1.Category {
+	return &placesv1.Category{
+		Id:        category.ID,
+		Name:      category.Name,
+		Slug:      category.Slug,
+		CreatedAt: timestamppb.New(category.CreatedAt),
+	}
 }

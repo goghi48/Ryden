@@ -24,7 +24,10 @@ func validCreatePlaceInput() CreatePlaceInput {
 		City:            "Moscow",
 		Latitude:        55.7558,
 		Longitude:       37.6173,
-		CreatedByUserID: "user-1",
+		CreatedByUserID: "11111111-1111-1111-1111-111111111111",
+		CategoryIDs: []string{
+			"11111111-1111-1111-1111-000000000002",
+		},
 	}
 }
 
@@ -52,7 +55,7 @@ func TestPlaceService_CreatePlace_Success(t *testing.T) {
 		t.Fatal("expected place ID to be generated")
 	}
 
-	if place.Status != domain.StatusPendingReview {
+	if place.Status != domain.StatusApproved {
 		t.Fatalf("expected status %s, got %s", domain.StatusPendingReview, place.Status)
 	}
 
@@ -110,6 +113,20 @@ func TestPlaceService_CreatePlace_ValidationErrors(t *testing.T) {
 				input.Longitude = 181
 			},
 			expectedErr: ErrInvalidLongitude,
+		},
+		{
+			name: "invalid created by user id",
+			mutateInput: func(input *CreatePlaceInput) {
+				input.CreatedByUserID = "user-1"
+			},
+			expectedErr: ErrInvalidCreatedByUserID,
+		},
+		{
+			name: "invalid category id",
+			mutateInput: func(input *CreatePlaceInput) {
+				input.CategoryIDs = []string{"bad-category-id"}
+			},
+			expectedErr: ErrInvalidCategoryID,
 		},
 	}
 

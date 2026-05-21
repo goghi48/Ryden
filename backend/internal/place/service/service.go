@@ -10,7 +10,7 @@ import (
 )
 
 type PlaceStorage interface {
-	Create(ctx context.Context, place domain.Place) error
+	Create(ctx context.Context, place domain.Place, categoryIDs []string) error
 	GetByID(ctx context.Context, id string) (domain.Place, error)
 	List(ctx context.Context, city string, limit int) ([]domain.Place, error)
 }
@@ -40,12 +40,12 @@ func (s *PlaceService) CreatePlace(ctx context.Context, input CreatePlaceInput) 
 		Latitude:        input.Latitude,
 		Longitude:       input.Longitude,
 		CreatedByUserID: input.CreatedByUserID,
-		Status:          domain.StatusPendingReview,
+		Status:          domain.StatusApproved,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
 
-	err := s.storage.Create(ctx, place)
+	err := s.storage.Create(ctx, place, input.CategoryIDs)
 	if err != nil {
 		return domain.Place{}, err
 	}
@@ -84,6 +84,15 @@ func validateCreatePlaceInput(input CreatePlaceInput) error {
 	if input.Longitude < -180 || input.Longitude > 180 {
 		return ErrInvalidLongitude
 	}
+	if _, err := uuid.Parse(input.CreatedByUserID); err != nil {
+		return ErrInvalidCreatedByUserID
+	}
+
+	for _, categoryID := range input.CategoryIDs {
+		if _, err := uuid.Parse(categoryID); err != nil {
+			return ErrInvalidCategoryID
+		}
+	}
 
 	return nil
 }
@@ -96,4 +105,5 @@ type CreatePlaceInput struct {
 	Latitude        float64
 	Longitude       float64
 	CreatedByUserID string
+	CategoryIDs     []string
 }

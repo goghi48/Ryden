@@ -18,7 +18,7 @@ func NewMemoryStorage() *MemoryStorage {
 	}
 }
 
-func (s *MemoryStorage) Create(ctx context.Context, place domain.Place) error {
+func (s *MemoryStorage) Create(ctx context.Context, place domain.Place, categoryIDs []string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -49,6 +49,10 @@ func (s *MemoryStorage) List(ctx context.Context, city string, limit int) ([]dom
 	var places []domain.Place
 	for _, place := range s.places {
 		if city != "" && place.City != city {
+			continue
+		}
+
+		if place.Status != domain.StatusApproved {
 			continue
 		}
 

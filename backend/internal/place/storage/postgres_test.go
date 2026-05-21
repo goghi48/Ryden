@@ -120,7 +120,7 @@ func TestPostgresStorage_Create_Success(t *testing.T) {
 	storage := newTestPostgresStorage(t)
 	place := validPlace()
 
-	err := storage.Create(ctx, place)
+	err := storage.Create(ctx, place, nil)
 	if err != nil {
 		t.Fatalf("failed to create place: %v", err)
 	}
@@ -174,11 +174,11 @@ func TestPostgresStorage_Create_DuplicateID(t *testing.T) {
 	storage := newTestPostgresStorage(t)
 	place := validPlace()
 
-	if err := storage.Create(ctx, place); err != nil {
+	if err := storage.Create(ctx, place, nil); err != nil {
 		t.Fatalf("expected no error while creating place, got %v", err)
 	}
 
-	err := storage.Create(ctx, place)
+	err := storage.Create(ctx, place, nil)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -202,11 +202,11 @@ func TestPostgresStorage_List_FiltersByCity(t *testing.T) {
 	secondPlace.Latitude = 55.0084
 	secondPlace.Longitude = 82.9357
 
-	if err := storage.Create(ctx, firstPlace); err != nil {
+	if err := storage.Create(ctx, firstPlace, nil); err != nil {
 		t.Fatalf("expected no error while creating first place, got %v", err)
 	}
 
-	if err := storage.Create(ctx, secondPlace); err != nil {
+	if err := storage.Create(ctx, secondPlace, nil); err != nil {
 		t.Fatalf("expected no error while creating second place, got %v", err)
 	}
 
@@ -239,11 +239,11 @@ func TestPostgresStorage_List_RespectsLimit(t *testing.T) {
 	secondPlace.Latitude = 55.0084
 	secondPlace.Longitude = 82.9357
 
-	if err := storage.Create(ctx, firstPlace); err != nil {
+	if err := storage.Create(ctx, firstPlace, nil); err != nil {
 		t.Fatalf("expected no error while creating first place, got %v", err)
 	}
 
-	if err := storage.Create(ctx, secondPlace); err != nil {
+	if err := storage.Create(ctx, secondPlace, nil); err != nil {
 		t.Fatalf("expected no error while creating second place, got %v", err)
 	}
 
@@ -254,5 +254,60 @@ func TestPostgresStorage_List_RespectsLimit(t *testing.T) {
 
 	if len(places) != 1 {
 		t.Fatalf("expected 1 place, got %d", len(places))
+	}
+}
+
+func TestPostgresStorage_Create_WithCategories(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	place := validPlace()
+
+	err := storage.Create(ctx, place, []string{
+		"11111111-1111-1111-1111-000000000002", // Food
+		"11111111-1111-1111-1111-000000000006", // Walking
+	})
+	if err != nil {
+		t.Fatalf("expected no error while creating place, got %v", err)
+	}
+
+	foundPlace, err := storage.GetByID(ctx, place.ID)
+	if err != nil {
+		t.Fatalf("expected no error while getting place, got %v", err)
+	}
+
+	if len(foundPlace.Categories) != 2 {
+		t.Fatalf("expected 2 categories, got %d", len(foundPlace.Categories))
+	}
+
+	slugs := make(map[string]bool)
+	for _, category := range foundPlace.Categories {
+		slugs[category.Slug] = true
+	}
+
+	if !slugs["food"] {
+		t.Fatal("expected category food")
+	}
+
+	if !slugs["walking"] {
+		t.Fatal("expected category walking")
+	}
+}
+
+func TestPostgresStorage_Create_CategoryNotFound(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	place := validPlace()
+
+	err := storage.Create(ctx, place, []string{
+		"99999999-9999-9999-9999-999999999999",
+	})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !errors.Is(err, ErrCategoryNotFound) {
+		t.Fatalf("expected error %v, got %v", ErrCategoryNotFound, err)
 	}
 }
