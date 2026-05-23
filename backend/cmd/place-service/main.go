@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
+	"strings"
 
 	placesv1 "github.com/goghi48/ryden/gen/go/ryden/places/v1"
 	"github.com/goghi48/ryden/internal/place/service"
@@ -31,6 +33,28 @@ func main() {
 		grpcPort = "50051"
 	}
 
+	placeReportsReviewThreshold := 3
+	if value := os.Getenv("PLACE_REPORTS_REVIEW_THRESHOLD"); value != "" {
+		parsedValue, err := strconv.Atoi(value)
+		if err != nil || parsedValue < 1 {
+			log.Fatal("PLACE_REPORTS_REVIEW_THRESHOLD must be a positive integer")
+		}
+
+		placeReportsReviewThreshold = parsedValue
+	}
+
+	placeReportsAutoReviewEnabled := true
+	if value := os.Getenv("PLACE_REPORTS_AUTO_REVIEW_ENABLED"); value != "" {
+		switch strings.ToLower(value) {
+		case "true", "1", "yes":
+			placeReportsAutoReviewEnabled = true
+		case "false", "0", "no":
+			placeReportsAutoReviewEnabled = false
+		default:
+			log.Fatal("PLACE_REPORTS_AUTO_REVIEW_ENABLED must be true or false")
+		}
+	}
+
 	listener, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -45,7 +69,11 @@ func main() {
 
 	postgresStorage := storage.NewPostgresStorage(pool)
 
-	placeService := service.NewPlaceService(postgresStorage)
+	placeService := service.NewPlaceServiceWithReportsAutoReview(
+		postgresStorage,
+		placeReportsAutoReviewEnabled,
+		placeReportsReviewThreshold,
+	)
 	handler := transport.NewHandler(placeService)
 
 	grpcServer := grpc.NewServer()

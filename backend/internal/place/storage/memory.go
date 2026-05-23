@@ -68,11 +68,12 @@ func (s *MemoryStorage) List(ctx context.Context, city string, limit int) ([]dom
 	return places, nil
 }
 
-func (s *MemoryStorage) CreateReport(ctx context.Context, report domain.PlaceReport) error {
+func (s *MemoryStorage) CreateReport(ctx context.Context, report domain.PlaceReport, reviewThreshold int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, ok := s.places[report.PlaceID]; !ok {
+	place, ok := s.places[report.PlaceID]
+	if !ok {
 		return ErrPlaceNotFound
 	}
 
@@ -88,5 +89,24 @@ func (s *MemoryStorage) CreateReport(ctx context.Context, report domain.PlaceRep
 	}
 
 	s.reports[report.ID] = report
+
+	if reviewThreshold > 0 && countOpenReportsByPlaceID(s.reports, report.PlaceID) >= reviewThreshold {
+		place.Status = domain.StatusPendingReview
+		place.UpdatedAt = report.CreatedAt
+		s.places[report.PlaceID] = place
+	}
+
 	return nil
+}
+
+func countOpenReportsByPlaceID(reports map[string]domain.PlaceReport, placeID string) int {
+	count := 0
+
+	for _, report := range reports {
+		if report.PlaceID == placeID && report.Status == domain.PlaceReportStatusOpen {
+			count++
+		}
+	}
+
+	return count
 }

@@ -337,7 +337,7 @@ func TestPostgresStorage_CreateReport_Success(t *testing.T) {
 	}
 
 	report := validPlaceReport()
-	if err := storage.CreateReport(ctx, report); err != nil {
+	if err := storage.CreateReport(ctx, report, 3); err != nil {
 		t.Fatalf("expected no error while creating report, got %v", err)
 	}
 
@@ -379,14 +379,14 @@ func TestPostgresStorage_CreateReport_DuplicateUserPerPlace(t *testing.T) {
 	}
 
 	report := validPlaceReport()
-	if err := storage.CreateReport(ctx, report); err != nil {
+	if err := storage.CreateReport(ctx, report, 3); err != nil {
 		t.Fatalf("expected no error while creating report, got %v", err)
 	}
 
 	duplicateReport := report
 	duplicateReport.ID = "66666666-6666-6666-6666-666666666666"
 
-	err := storage.CreateReport(ctx, duplicateReport)
+	err := storage.CreateReport(ctx, duplicateReport, 3)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -403,12 +403,51 @@ func TestPostgresStorage_CreateReport_PlaceNotFound(t *testing.T) {
 	report := validPlaceReport()
 	report.PlaceID = "99999999-9999-9999-9999-999999999999"
 
-	err := storage.CreateReport(ctx, report)
+	err := storage.CreateReport(ctx, report, 3)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
 
 	if !errors.Is(err, ErrPlaceNotFound) {
 		t.Fatalf("expected error %v, got %v", ErrPlaceNotFound, err)
+	}
+}
+
+func TestPostgresStorage_CreateReport_MarksPlacePendingReviewWhenThresholdReached(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	place := validPlace()
+	if err := storage.Create(ctx, place, nil); err != nil {
+		t.Fatalf("expected no error while creating place, got %v", err)
+	}
+
+	firstReport := validPlaceReport()
+	if err := storage.CreateReport(ctx, firstReport, 2); err != nil {
+		t.Fatalf("expected no error while creating first report, got %v", err)
+	}
+
+	foundPlace, err := storage.GetByID(ctx, place.ID)
+	if err != nil {
+		t.Fatalf("expected no error while getting place, got %v", err)
+	}
+	if foundPlace.Status != domain.StatusApproved {
+		t.Fatalf("expected status %q before threshold, got %q", domain.StatusApproved, foundPlace.Status)
+	}
+
+	secondReport := validPlaceReport()
+	secondReport.ID = "77777777-7777-7777-7777-777777777777"
+	secondReport.ReportedByUserID = "88888888-8888-8888-8888-888888888888"
+
+	if err := storage.CreateReport(ctx, secondReport, 2); err != nil {
+		t.Fatalf("expected no error while creating second report, got %v", err)
+	}
+
+	foundPlace, err = storage.GetByID(ctx, place.ID)
+	if err != nil {
+		t.Fatalf("expected no error while getting place, got %v", err)
+	}
+	if foundPlace.Status != domain.StatusPendingReview {
+		t.Fatalf("expected status %q after threshold, got %q", domain.StatusPendingReview, foundPlace.Status)
 	}
 }

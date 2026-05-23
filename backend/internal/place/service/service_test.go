@@ -375,3 +375,59 @@ func TestPlaceService_CreatePlaceReport_DuplicateUserPerPlace(t *testing.T) {
 		t.Fatalf("expected error %v, got %v", storage.ErrPlaceReportAlreadyExists, err)
 	}
 }
+
+func TestPlaceService_CreatePlaceReport_MarksPlacePendingReviewWhenThresholdReached(t *testing.T) {
+	memoryStorage := storage.NewMemoryStorage()
+	placeService := NewPlaceServiceWithReportsReviewThreshold(memoryStorage, 2)
+
+	place := mustCreatePlace(t, placeService, validCreatePlaceInput())
+
+	firstReportInput := validCreatePlaceReportInput(place.ID)
+	if _, err := placeService.CreatePlaceReport(context.Background(), firstReportInput); err != nil {
+		t.Fatalf("expected no error while creating first report, got %v", err)
+	}
+
+	foundPlace, err := placeService.GetPlace(context.Background(), place.ID)
+	if err != nil {
+		t.Fatalf("expected no error while getting place, got %v", err)
+	}
+	if foundPlace.Status != domain.StatusApproved {
+		t.Fatalf("expected status %q before threshold, got %q", domain.StatusApproved, foundPlace.Status)
+	}
+
+	secondReportInput := validCreatePlaceReportInput(place.ID)
+	secondReportInput.ReportedByUserID = "33333333-3333-3333-3333-333333333333"
+
+	if _, err := placeService.CreatePlaceReport(context.Background(), secondReportInput); err != nil {
+		t.Fatalf("expected no error while creating second report, got %v", err)
+	}
+
+	foundPlace, err = placeService.GetPlace(context.Background(), place.ID)
+	if err != nil {
+		t.Fatalf("expected no error while getting place, got %v", err)
+	}
+	if foundPlace.Status != domain.StatusPendingReview {
+		t.Fatalf("expected status %q after threshold, got %q", domain.StatusPendingReview, foundPlace.Status)
+	}
+}
+
+func TestPlaceService_CreatePlaceReport_DoesNotMarkPlacePendingReviewWhenAutoReviewDisabled(t *testing.T) {
+	memoryStorage := storage.NewMemoryStorage()
+	placeService := NewPlaceServiceWithReportsAutoReview(memoryStorage, false, 1)
+
+	place := mustCreatePlace(t, placeService, validCreatePlaceInput())
+
+	reportInput := validCreatePlaceReportInput(place.ID)
+	if _, err := placeService.CreatePlaceReport(context.Background(), reportInput); err != nil {
+		t.Fatalf("expected no error while creating report, got %v", err)
+	}
+
+	foundPlace, err := placeService.GetPlace(context.Background(), place.ID)
+	if err != nil {
+		t.Fatalf("expected no error while getting place, got %v", err)
+	}
+
+	if foundPlace.Status != domain.StatusApproved {
+		t.Fatalf("expected status %q when auto review disabled, got %q", domain.StatusApproved, foundPlace.Status)
+	}
+}

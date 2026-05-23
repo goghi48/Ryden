@@ -13,15 +13,35 @@ type PlaceStorage interface {
 	Create(ctx context.Context, place domain.Place, categoryIDs []string) error
 	GetByID(ctx context.Context, id string) (domain.Place, error)
 	List(ctx context.Context, city string, limit int) ([]domain.Place, error)
-	CreateReport(ctx context.Context, report domain.PlaceReport) error
+	CreateReport(ctx context.Context, report domain.PlaceReport, reviewThreshold int) error
 }
 
 type PlaceService struct {
-	storage PlaceStorage
+	storage                       PlaceStorage
+	placeReportsAutoReviewEnabled bool
+	placeReportsReviewThreshold   int
 }
 
+const defaultPlaceReportsReviewThreshold = 3
+
 func NewPlaceService(storage PlaceStorage) *PlaceService {
-	return &PlaceService{storage: storage}
+	return NewPlaceServiceWithReportsAutoReview(storage, true, defaultPlaceReportsReviewThreshold)
+}
+
+func NewPlaceServiceWithReportsReviewThreshold(storage PlaceStorage, threshold int) *PlaceService {
+	return NewPlaceServiceWithReportsAutoReview(storage, true, threshold)
+}
+
+func NewPlaceServiceWithReportsAutoReview(storage PlaceStorage, enabled bool, threshold int) *PlaceService {
+	if threshold < 1 {
+		threshold = defaultPlaceReportsReviewThreshold
+	}
+
+	return &PlaceService{
+		storage:                       storage,
+		placeReportsAutoReviewEnabled: enabled,
+		placeReportsReviewThreshold:   threshold,
+	}
 }
 
 func (s *PlaceService) CreatePlace(ctx context.Context, input CreatePlaceInput) (domain.Place, error) {
@@ -91,7 +111,12 @@ func (s *PlaceService) CreatePlaceReport(ctx context.Context, input CreatePlaceR
 		ResolvedAt:       nil,
 	}
 
-	if err := s.storage.CreateReport(ctx, placeReport); err != nil {
+	reviewThreshold := s.placeReportsReviewThreshold
+	if !s.placeReportsAutoReviewEnabled {
+		reviewThreshold = 0
+	}
+
+	if err := s.storage.CreateReport(ctx, placeReport, reviewThreshold); err != nil {
 		return domain.PlaceReport{}, err
 	}
 

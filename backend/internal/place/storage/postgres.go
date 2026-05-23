@@ -334,8 +334,16 @@ func (s *PostgresStorage) getCategoriesByPlaceIDs(ctx context.Context, placeIDs 
 	return categoriesByPlaceID, nil
 }
 
-func (s *PostgresStorage) CreateReport(ctx context.Context, report domain.PlaceReport) error {
-	const query = `
+func (s *PostgresStorage) CreateReport(ctx context.Context, report domain.PlaceReport, reviewThreshold int) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+
+	const insertReportQuery = `
 		INSERT INTO place_reports (
 			id,
 			place_id,
@@ -348,9 +356,9 @@ func (s *PostgresStorage) CreateReport(ctx context.Context, report domain.PlaceR
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 
-	_, err := s.pool.Exec(
+	_, err = tx.Exec(
 		ctx,
-		query,
+		insertReportQuery,
 		report.ID,
 		report.PlaceID,
 		report.ReportedByUserID,
@@ -361,6 +369,48 @@ func (s *PostgresStorage) CreateReport(ctx context.Context, report domain.PlaceR
 	)
 	if err != nil {
 		return mapPostgresCreateReportError(err)
+	}
+
+	if reviewThreshold > 0 {
+		var openReportsCount int
+
+		const countReportsQuery = `
+			SELECT count(*)
+			FROM place_reports
+			WHERE place_id = $1
+				AND status = 'OPEN'
+		`
+
+		err = tx.QueryRow(ctx, countReportsQuery, report.PlaceID).Scan(&openReportsCount)
+		if err != nil {
+			return err
+		}
+
+		if openReportsCount >= reviewThreshold {
+			const updatePlaceStatusQuery = `
+				UPDATE places
+				SET status = $1,
+					updated_at = $2
+				WHERE id = $3
+					AND status = $4
+			`
+
+			_, err = tx.Exec(
+				ctx,
+				updatePlaceStatusQuery,
+				string(domain.StatusPendingReview),
+				report.CreatedAt,
+				report.PlaceID,
+				string(domain.StatusApproved),
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return err
 	}
 
 	return nil
