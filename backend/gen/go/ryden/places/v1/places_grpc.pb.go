@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PlaceService_CreatePlace_FullMethodName = "/ryden.places.v1.PlaceService/CreatePlace"
-	PlaceService_GetPlace_FullMethodName    = "/ryden.places.v1.PlaceService/GetPlace"
-	PlaceService_ListPlaces_FullMethodName  = "/ryden.places.v1.PlaceService/ListPlaces"
+	PlaceService_CreatePlace_FullMethodName       = "/ryden.places.v1.PlaceService/CreatePlace"
+	PlaceService_GetPlace_FullMethodName          = "/ryden.places.v1.PlaceService/GetPlace"
+	PlaceService_ListPlaces_FullMethodName        = "/ryden.places.v1.PlaceService/ListPlaces"
+	PlaceService_CreatePlaceReport_FullMethodName = "/ryden.places.v1.PlaceService/CreatePlaceReport"
 )
 
 // PlaceServiceClient is the client API for PlaceService service.
@@ -31,6 +32,7 @@ type PlaceServiceClient interface {
 	CreatePlace(ctx context.Context, in *CreatePlaceRequest, opts ...grpc.CallOption) (*CreatePlaceResponse, error)
 	GetPlace(ctx context.Context, in *GetPlaceRequest, opts ...grpc.CallOption) (*GetPlaceResponse, error)
 	ListPlaces(ctx context.Context, in *ListPlacesRequest, opts ...grpc.CallOption) (*ListPlacesResponse, error)
+	CreatePlaceReport(ctx context.Context, in *CreatePlaceReportRequest, opts ...grpc.CallOption) (*CreatePlaceReportResponse, error)
 }
 
 type placeServiceClient struct {
@@ -71,6 +73,16 @@ func (c *placeServiceClient) ListPlaces(ctx context.Context, in *ListPlacesReque
 	return out, nil
 }
 
+func (c *placeServiceClient) CreatePlaceReport(ctx context.Context, in *CreatePlaceReportRequest, opts ...grpc.CallOption) (*CreatePlaceReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePlaceReportResponse)
+	err := c.cc.Invoke(ctx, PlaceService_CreatePlaceReport_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PlaceServiceServer is the server API for PlaceService service.
 // All implementations must embed UnimplementedPlaceServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type PlaceServiceServer interface {
 	CreatePlace(context.Context, *CreatePlaceRequest) (*CreatePlaceResponse, error)
 	GetPlace(context.Context, *GetPlaceRequest) (*GetPlaceResponse, error)
 	ListPlaces(context.Context, *ListPlacesRequest) (*ListPlacesResponse, error)
+	CreatePlaceReport(context.Context, *CreatePlaceReportRequest) (*CreatePlaceReportResponse, error)
 	mustEmbedUnimplementedPlaceServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedPlaceServiceServer) GetPlace(context.Context, *GetPlaceReques
 }
 func (UnimplementedPlaceServiceServer) ListPlaces(context.Context, *ListPlacesRequest) (*ListPlacesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPlaces not implemented")
+}
+func (UnimplementedPlaceServiceServer) CreatePlaceReport(context.Context, *CreatePlaceReportRequest) (*CreatePlaceReportResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePlaceReport not implemented")
 }
 func (UnimplementedPlaceServiceServer) mustEmbedUnimplementedPlaceServiceServer() {}
 func (UnimplementedPlaceServiceServer) testEmbeddedByValue()                      {}
@@ -172,6 +188,24 @@ func _PlaceService_ListPlaces_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlaceService_CreatePlaceReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePlaceReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlaceServiceServer).CreatePlaceReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PlaceService_CreatePlaceReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlaceServiceServer).CreatePlaceReport(ctx, req.(*CreatePlaceReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PlaceService_ServiceDesc is the grpc.ServiceDesc for PlaceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var PlaceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPlaces",
 			Handler:    _PlaceService_ListPlaces_Handler,
+		},
+		{
+			MethodName: "CreatePlaceReport",
+			Handler:    _PlaceService_CreatePlaceReport_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

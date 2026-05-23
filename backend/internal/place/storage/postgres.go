@@ -333,3 +333,51 @@ func (s *PostgresStorage) getCategoriesByPlaceIDs(ctx context.Context, placeIDs 
 
 	return categoriesByPlaceID, nil
 }
+
+func (s *PostgresStorage) CreateReport(ctx context.Context, report domain.PlaceReport) error {
+	const query = `
+		INSERT INTO place_reports (
+			id,
+			place_id,
+			reported_by_user_id,
+			reason,
+			comment,
+			status,
+			created_at
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+	`
+
+	_, err := s.pool.Exec(
+		ctx,
+		query,
+		report.ID,
+		report.PlaceID,
+		report.ReportedByUserID,
+		string(report.Reason),
+		report.Comment,
+		string(report.Status),
+		report.CreatedAt,
+	)
+	if err != nil {
+		return mapPostgresCreateReportError(err)
+	}
+
+	return nil
+}
+
+func mapPostgresCreateReportError(err error) error {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return err
+	}
+
+	switch pgErr.Code {
+	case "23505":
+		return ErrPlaceReportAlreadyExists
+	case "23503":
+		return ErrPlaceNotFound
+	default:
+		return err
+	}
+}

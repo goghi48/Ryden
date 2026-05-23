@@ -106,12 +106,27 @@ func validPlace() domain.Place {
 		Latitude:        55.7558,
 		Longitude:       37.6173,
 		CreatedByUserID: "22222222-2222-2222-2222-222222222222",
-		Status:          domain.StatusPendingReview,
+		Status:          domain.StatusApproved,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
 
 	return place
+}
+
+func validPlaceReport() domain.PlaceReport {
+	now := time.Now()
+
+	return domain.PlaceReport{
+		ID:               "44444444-4444-4444-4444-444444444444",
+		PlaceID:          "11111111-1111-1111-1111-111111111111",
+		ReportedByUserID: "55555555-5555-5555-5555-555555555555",
+		Reason:           domain.PlaceReportReasonWrongInfo,
+		Comment:          "wrong address",
+		Status:           domain.PlaceReportStatusOpen,
+		CreatedAt:        now,
+		ResolvedAt:       nil,
+	}
 }
 
 func TestPostgresStorage_Create_Success(t *testing.T) {
@@ -309,5 +324,91 @@ func TestPostgresStorage_Create_CategoryNotFound(t *testing.T) {
 
 	if !errors.Is(err, ErrCategoryNotFound) {
 		t.Fatalf("expected error %v, got %v", ErrCategoryNotFound, err)
+	}
+}
+
+func TestPostgresStorage_CreateReport_Success(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	place := validPlace()
+	if err := storage.Create(ctx, place, nil); err != nil {
+		t.Fatalf("expected no error while creating place, got %v", err)
+	}
+
+	report := validPlaceReport()
+	if err := storage.CreateReport(ctx, report); err != nil {
+		t.Fatalf("expected no error while creating report, got %v", err)
+	}
+
+	var count int
+	err := storage.pool.QueryRow(
+		ctx,
+		`
+			SELECT count(*)
+			FROM place_reports
+			WHERE id = $1
+				AND place_id = $2
+				AND reported_by_user_id = $3
+				AND reason = $4
+				AND status = $5
+				AND resolved_at IS NULL
+		`,
+		report.ID,
+		report.PlaceID,
+		report.ReportedByUserID,
+		string(report.Reason),
+		string(report.Status),
+	).Scan(&count)
+	if err != nil {
+		t.Fatalf("failed to query created report: %v", err)
+	}
+
+	if count != 1 {
+		t.Fatalf("expected 1 created report, got %d", count)
+	}
+}
+
+func TestPostgresStorage_CreateReport_DuplicateUserPerPlace(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	place := validPlace()
+	if err := storage.Create(ctx, place, nil); err != nil {
+		t.Fatalf("expected no error while creating place, got %v", err)
+	}
+
+	report := validPlaceReport()
+	if err := storage.CreateReport(ctx, report); err != nil {
+		t.Fatalf("expected no error while creating report, got %v", err)
+	}
+
+	duplicateReport := report
+	duplicateReport.ID = "66666666-6666-6666-6666-666666666666"
+
+	err := storage.CreateReport(ctx, duplicateReport)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !errors.Is(err, ErrPlaceReportAlreadyExists) {
+		t.Fatalf("expected error %v, got %v", ErrPlaceReportAlreadyExists, err)
+	}
+}
+
+func TestPostgresStorage_CreateReport_PlaceNotFound(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	report := validPlaceReport()
+	report.PlaceID = "99999999-9999-9999-9999-999999999999"
+
+	err := storage.CreateReport(ctx, report)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !errors.Is(err, ErrPlaceNotFound) {
+		t.Fatalf("expected error %v, got %v", ErrPlaceNotFound, err)
 	}
 }

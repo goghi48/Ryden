@@ -77,6 +77,119 @@ func (PlaceStatus) EnumDescriptor() ([]byte, []int) {
 	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{0}
 }
 
+type PlaceReportReason int32
+
+const (
+	PlaceReportReason_PLACE_REPORT_REASON_UNSPECIFIED       PlaceReportReason = 0
+	PlaceReportReason_PLACE_REPORT_REASON_SPAM              PlaceReportReason = 1
+	PlaceReportReason_PLACE_REPORT_REASON_OFFENSIVE_CONTENT PlaceReportReason = 2
+	PlaceReportReason_PLACE_REPORT_REASON_WRONG_INFO        PlaceReportReason = 3
+	PlaceReportReason_PLACE_REPORT_REASON_DUPLICATE         PlaceReportReason = 4
+	PlaceReportReason_PLACE_REPORT_REASON_CLOSED_PLACE      PlaceReportReason = 5
+	PlaceReportReason_PLACE_REPORT_REASON_OTHER             PlaceReportReason = 6
+)
+
+// Enum value maps for PlaceReportReason.
+var (
+	PlaceReportReason_name = map[int32]string{
+		0: "PLACE_REPORT_REASON_UNSPECIFIED",
+		1: "PLACE_REPORT_REASON_SPAM",
+		2: "PLACE_REPORT_REASON_OFFENSIVE_CONTENT",
+		3: "PLACE_REPORT_REASON_WRONG_INFO",
+		4: "PLACE_REPORT_REASON_DUPLICATE",
+		5: "PLACE_REPORT_REASON_CLOSED_PLACE",
+		6: "PLACE_REPORT_REASON_OTHER",
+	}
+	PlaceReportReason_value = map[string]int32{
+		"PLACE_REPORT_REASON_UNSPECIFIED":       0,
+		"PLACE_REPORT_REASON_SPAM":              1,
+		"PLACE_REPORT_REASON_OFFENSIVE_CONTENT": 2,
+		"PLACE_REPORT_REASON_WRONG_INFO":        3,
+		"PLACE_REPORT_REASON_DUPLICATE":         4,
+		"PLACE_REPORT_REASON_CLOSED_PLACE":      5,
+		"PLACE_REPORT_REASON_OTHER":             6,
+	}
+)
+
+func (x PlaceReportReason) Enum() *PlaceReportReason {
+	p := new(PlaceReportReason)
+	*p = x
+	return p
+}
+
+func (x PlaceReportReason) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PlaceReportReason) Descriptor() protoreflect.EnumDescriptor {
+	return file_ryden_places_v1_places_proto_enumTypes[1].Descriptor()
+}
+
+func (PlaceReportReason) Type() protoreflect.EnumType {
+	return &file_ryden_places_v1_places_proto_enumTypes[1]
+}
+
+func (x PlaceReportReason) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PlaceReportReason.Descriptor instead.
+func (PlaceReportReason) EnumDescriptor() ([]byte, []int) {
+	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{1}
+}
+
+type PlaceReportStatus int32
+
+const (
+	PlaceReportStatus_PLACE_REPORT_STATUS_UNSPECIFIED PlaceReportStatus = 0
+	PlaceReportStatus_PLACE_REPORT_STATUS_OPEN        PlaceReportStatus = 1
+	PlaceReportStatus_PLACE_REPORT_STATUS_RESOLVED    PlaceReportStatus = 2
+	PlaceReportStatus_PLACE_REPORT_STATUS_REJECTED    PlaceReportStatus = 3
+)
+
+// Enum value maps for PlaceReportStatus.
+var (
+	PlaceReportStatus_name = map[int32]string{
+		0: "PLACE_REPORT_STATUS_UNSPECIFIED",
+		1: "PLACE_REPORT_STATUS_OPEN",
+		2: "PLACE_REPORT_STATUS_RESOLVED",
+		3: "PLACE_REPORT_STATUS_REJECTED",
+	}
+	PlaceReportStatus_value = map[string]int32{
+		"PLACE_REPORT_STATUS_UNSPECIFIED": 0,
+		"PLACE_REPORT_STATUS_OPEN":        1,
+		"PLACE_REPORT_STATUS_RESOLVED":    2,
+		"PLACE_REPORT_STATUS_REJECTED":    3,
+	}
+)
+
+func (x PlaceReportStatus) Enum() *PlaceReportStatus {
+	p := new(PlaceReportStatus)
+	*p = x
+	return p
+}
+
+func (x PlaceReportStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PlaceReportStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_ryden_places_v1_places_proto_enumTypes[2].Descriptor()
+}
+
+func (PlaceReportStatus) Type() protoreflect.EnumType {
+	return &file_ryden_places_v1_places_proto_enumTypes[2]
+}
+
+func (x PlaceReportStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PlaceReportStatus.Descriptor instead.
+func (PlaceReportStatus) EnumDescriptor() ([]byte, []int) {
+	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{2}
+}
+
 type CreatePlaceRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Title           string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
@@ -605,6 +718,218 @@ func (x *Place) GetCategories() []*Category {
 	return nil
 }
 
+type CreatePlaceReportRequest struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	PlaceId          string                 `protobuf:"bytes,1,opt,name=place_id,json=placeId,proto3" json:"place_id,omitempty"`
+	ReportedByUserId string                 `protobuf:"bytes,2,opt,name=reported_by_user_id,json=reportedByUserId,proto3" json:"reported_by_user_id,omitempty"`
+	Reason           PlaceReportReason      `protobuf:"varint,3,opt,name=reason,proto3,enum=ryden.places.v1.PlaceReportReason" json:"reason,omitempty"`
+	Comment          string                 `protobuf:"bytes,4,opt,name=comment,proto3" json:"comment,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *CreatePlaceReportRequest) Reset() {
+	*x = CreatePlaceReportRequest{}
+	mi := &file_ryden_places_v1_places_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePlaceReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePlaceReportRequest) ProtoMessage() {}
+
+func (x *CreatePlaceReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ryden_places_v1_places_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePlaceReportRequest.ProtoReflect.Descriptor instead.
+func (*CreatePlaceReportRequest) Descriptor() ([]byte, []int) {
+	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *CreatePlaceReportRequest) GetPlaceId() string {
+	if x != nil {
+		return x.PlaceId
+	}
+	return ""
+}
+
+func (x *CreatePlaceReportRequest) GetReportedByUserId() string {
+	if x != nil {
+		return x.ReportedByUserId
+	}
+	return ""
+}
+
+func (x *CreatePlaceReportRequest) GetReason() PlaceReportReason {
+	if x != nil {
+		return x.Reason
+	}
+	return PlaceReportReason_PLACE_REPORT_REASON_UNSPECIFIED
+}
+
+func (x *CreatePlaceReportRequest) GetComment() string {
+	if x != nil {
+		return x.Comment
+	}
+	return ""
+}
+
+type CreatePlaceReportResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlaceReport   *PlaceReport           `protobuf:"bytes,1,opt,name=place_report,json=placeReport,proto3" json:"place_report,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePlaceReportResponse) Reset() {
+	*x = CreatePlaceReportResponse{}
+	mi := &file_ryden_places_v1_places_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePlaceReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePlaceReportResponse) ProtoMessage() {}
+
+func (x *CreatePlaceReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ryden_places_v1_places_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePlaceReportResponse.ProtoReflect.Descriptor instead.
+func (*CreatePlaceReportResponse) Descriptor() ([]byte, []int) {
+	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CreatePlaceReportResponse) GetPlaceReport() *PlaceReport {
+	if x != nil {
+		return x.PlaceReport
+	}
+	return nil
+}
+
+type PlaceReport struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PlaceId          string                 `protobuf:"bytes,2,opt,name=place_id,json=placeId,proto3" json:"place_id,omitempty"`
+	ReportedByUserId string                 `protobuf:"bytes,3,opt,name=reported_by_user_id,json=reportedByUserId,proto3" json:"reported_by_user_id,omitempty"`
+	Reason           PlaceReportReason      `protobuf:"varint,4,opt,name=reason,proto3,enum=ryden.places.v1.PlaceReportReason" json:"reason,omitempty"`
+	Comment          string                 `protobuf:"bytes,5,opt,name=comment,proto3" json:"comment,omitempty"`
+	Status           PlaceReportStatus      `protobuf:"varint,6,opt,name=status,proto3,enum=ryden.places.v1.PlaceReportStatus" json:"status,omitempty"`
+	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ResolvedAt       *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=resolved_at,json=resolvedAt,proto3" json:"resolved_at,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *PlaceReport) Reset() {
+	*x = PlaceReport{}
+	mi := &file_ryden_places_v1_places_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlaceReport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlaceReport) ProtoMessage() {}
+
+func (x *PlaceReport) ProtoReflect() protoreflect.Message {
+	mi := &file_ryden_places_v1_places_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlaceReport.ProtoReflect.Descriptor instead.
+func (*PlaceReport) Descriptor() ([]byte, []int) {
+	return file_ryden_places_v1_places_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *PlaceReport) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PlaceReport) GetPlaceId() string {
+	if x != nil {
+		return x.PlaceId
+	}
+	return ""
+}
+
+func (x *PlaceReport) GetReportedByUserId() string {
+	if x != nil {
+		return x.ReportedByUserId
+	}
+	return ""
+}
+
+func (x *PlaceReport) GetReason() PlaceReportReason {
+	if x != nil {
+		return x.Reason
+	}
+	return PlaceReportReason_PLACE_REPORT_REASON_UNSPECIFIED
+}
+
+func (x *PlaceReport) GetComment() string {
+	if x != nil {
+		return x.Comment
+	}
+	return ""
+}
+
+func (x *PlaceReport) GetStatus() PlaceReportStatus {
+	if x != nil {
+		return x.Status
+	}
+	return PlaceReportStatus_PLACE_REPORT_STATUS_UNSPECIFIED
+}
+
+func (x *PlaceReport) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *PlaceReport) GetResolvedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ResolvedAt
+	}
+	return nil
+}
+
 var File_ryden_places_v1_places_proto protoreflect.FileDescriptor
 
 const file_ryden_places_v1_places_proto_rawDesc = "" +
@@ -653,18 +978,50 @@ const file_ryden_places_v1_places_proto_rawDesc = "" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x129\n" +
 	"\n" +
 	"categories\x18\f \x03(\v2\x19.ryden.places.v1.CategoryR\n" +
-	"categories*\x9d\x01\n" +
+	"categories\"\xba\x01\n" +
+	"\x18CreatePlaceReportRequest\x12\x19\n" +
+	"\bplace_id\x18\x01 \x01(\tR\aplaceId\x12-\n" +
+	"\x13reported_by_user_id\x18\x02 \x01(\tR\x10reportedByUserId\x12:\n" +
+	"\x06reason\x18\x03 \x01(\x0e2\".ryden.places.v1.PlaceReportReasonR\x06reason\x12\x18\n" +
+	"\acomment\x18\x04 \x01(\tR\acomment\"\\\n" +
+	"\x19CreatePlaceReportResponse\x12?\n" +
+	"\fplace_report\x18\x01 \x01(\v2\x1c.ryden.places.v1.PlaceReportR\vplaceReport\"\xf1\x02\n" +
+	"\vPlaceReport\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
+	"\bplace_id\x18\x02 \x01(\tR\aplaceId\x12-\n" +
+	"\x13reported_by_user_id\x18\x03 \x01(\tR\x10reportedByUserId\x12:\n" +
+	"\x06reason\x18\x04 \x01(\x0e2\".ryden.places.v1.PlaceReportReasonR\x06reason\x12\x18\n" +
+	"\acomment\x18\x05 \x01(\tR\acomment\x12:\n" +
+	"\x06status\x18\x06 \x01(\x0e2\".ryden.places.v1.PlaceReportStatusR\x06status\x129\n" +
+	"\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
+	"\vresolved_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"resolvedAt*\x9d\x01\n" +
 	"\vPlaceStatus\x12\x1c\n" +
 	"\x18PLACE_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bPLACE_STATUS_PENDING_REVIEW\x10\x01\x12\x19\n" +
 	"\x15PLACE_STATUS_APPROVED\x10\x02\x12\x19\n" +
 	"\x15PLACE_STATUS_REJECTED\x10\x03\x12\x19\n" +
-	"\x15PLACE_STATUS_ARCHIVED\x10\x042\x90\x02\n" +
+	"\x15PLACE_STATUS_ARCHIVED\x10\x04*\x8d\x02\n" +
+	"\x11PlaceReportReason\x12#\n" +
+	"\x1fPLACE_REPORT_REASON_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18PLACE_REPORT_REASON_SPAM\x10\x01\x12)\n" +
+	"%PLACE_REPORT_REASON_OFFENSIVE_CONTENT\x10\x02\x12\"\n" +
+	"\x1ePLACE_REPORT_REASON_WRONG_INFO\x10\x03\x12!\n" +
+	"\x1dPLACE_REPORT_REASON_DUPLICATE\x10\x04\x12$\n" +
+	" PLACE_REPORT_REASON_CLOSED_PLACE\x10\x05\x12\x1d\n" +
+	"\x19PLACE_REPORT_REASON_OTHER\x10\x06*\x9a\x01\n" +
+	"\x11PlaceReportStatus\x12#\n" +
+	"\x1fPLACE_REPORT_STATUS_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18PLACE_REPORT_STATUS_OPEN\x10\x01\x12 \n" +
+	"\x1cPLACE_REPORT_STATUS_RESOLVED\x10\x02\x12 \n" +
+	"\x1cPLACE_REPORT_STATUS_REJECTED\x10\x032\xfc\x02\n" +
 	"\fPlaceService\x12X\n" +
 	"\vCreatePlace\x12#.ryden.places.v1.CreatePlaceRequest\x1a$.ryden.places.v1.CreatePlaceResponse\x12O\n" +
 	"\bGetPlace\x12 .ryden.places.v1.GetPlaceRequest\x1a!.ryden.places.v1.GetPlaceResponse\x12U\n" +
 	"\n" +
-	"ListPlaces\x12\".ryden.places.v1.ListPlacesRequest\x1a#.ryden.places.v1.ListPlacesResponseB:Z8github.com/goghi48/ryden/gen/go/ryden/places/v1;placesv1b\x06proto3"
+	"ListPlaces\x12\".ryden.places.v1.ListPlacesRequest\x1a#.ryden.places.v1.ListPlacesResponse\x12j\n" +
+	"\x11CreatePlaceReport\x12).ryden.places.v1.CreatePlaceReportRequest\x1a*.ryden.places.v1.CreatePlaceReportResponseB:Z8github.com/goghi48/ryden/gen/go/ryden/places/v1;placesv1b\x06proto3"
 
 var (
 	file_ryden_places_v1_places_proto_rawDescOnce sync.Once
@@ -678,40 +1035,53 @@ func file_ryden_places_v1_places_proto_rawDescGZIP() []byte {
 	return file_ryden_places_v1_places_proto_rawDescData
 }
 
-var file_ryden_places_v1_places_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_ryden_places_v1_places_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_ryden_places_v1_places_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_ryden_places_v1_places_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_ryden_places_v1_places_proto_goTypes = []any{
-	(PlaceStatus)(0),              // 0: ryden.places.v1.PlaceStatus
-	(*CreatePlaceRequest)(nil),    // 1: ryden.places.v1.CreatePlaceRequest
-	(*CreatePlaceResponse)(nil),   // 2: ryden.places.v1.CreatePlaceResponse
-	(*GetPlaceRequest)(nil),       // 3: ryden.places.v1.GetPlaceRequest
-	(*GetPlaceResponse)(nil),      // 4: ryden.places.v1.GetPlaceResponse
-	(*ListPlacesRequest)(nil),     // 5: ryden.places.v1.ListPlacesRequest
-	(*ListPlacesResponse)(nil),    // 6: ryden.places.v1.ListPlacesResponse
-	(*Category)(nil),              // 7: ryden.places.v1.Category
-	(*Place)(nil),                 // 8: ryden.places.v1.Place
-	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
+	(PlaceStatus)(0),                  // 0: ryden.places.v1.PlaceStatus
+	(PlaceReportReason)(0),            // 1: ryden.places.v1.PlaceReportReason
+	(PlaceReportStatus)(0),            // 2: ryden.places.v1.PlaceReportStatus
+	(*CreatePlaceRequest)(nil),        // 3: ryden.places.v1.CreatePlaceRequest
+	(*CreatePlaceResponse)(nil),       // 4: ryden.places.v1.CreatePlaceResponse
+	(*GetPlaceRequest)(nil),           // 5: ryden.places.v1.GetPlaceRequest
+	(*GetPlaceResponse)(nil),          // 6: ryden.places.v1.GetPlaceResponse
+	(*ListPlacesRequest)(nil),         // 7: ryden.places.v1.ListPlacesRequest
+	(*ListPlacesResponse)(nil),        // 8: ryden.places.v1.ListPlacesResponse
+	(*Category)(nil),                  // 9: ryden.places.v1.Category
+	(*Place)(nil),                     // 10: ryden.places.v1.Place
+	(*CreatePlaceReportRequest)(nil),  // 11: ryden.places.v1.CreatePlaceReportRequest
+	(*CreatePlaceReportResponse)(nil), // 12: ryden.places.v1.CreatePlaceReportResponse
+	(*PlaceReport)(nil),               // 13: ryden.places.v1.PlaceReport
+	(*timestamppb.Timestamp)(nil),     // 14: google.protobuf.Timestamp
 }
 var file_ryden_places_v1_places_proto_depIdxs = []int32{
-	8,  // 0: ryden.places.v1.CreatePlaceResponse.place:type_name -> ryden.places.v1.Place
-	8,  // 1: ryden.places.v1.GetPlaceResponse.place:type_name -> ryden.places.v1.Place
-	8,  // 2: ryden.places.v1.ListPlacesResponse.places:type_name -> ryden.places.v1.Place
-	9,  // 3: ryden.places.v1.Category.created_at:type_name -> google.protobuf.Timestamp
+	10, // 0: ryden.places.v1.CreatePlaceResponse.place:type_name -> ryden.places.v1.Place
+	10, // 1: ryden.places.v1.GetPlaceResponse.place:type_name -> ryden.places.v1.Place
+	10, // 2: ryden.places.v1.ListPlacesResponse.places:type_name -> ryden.places.v1.Place
+	14, // 3: ryden.places.v1.Category.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 4: ryden.places.v1.Place.status:type_name -> ryden.places.v1.PlaceStatus
-	9,  // 5: ryden.places.v1.Place.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 6: ryden.places.v1.Place.updated_at:type_name -> google.protobuf.Timestamp
-	7,  // 7: ryden.places.v1.Place.categories:type_name -> ryden.places.v1.Category
-	1,  // 8: ryden.places.v1.PlaceService.CreatePlace:input_type -> ryden.places.v1.CreatePlaceRequest
-	3,  // 9: ryden.places.v1.PlaceService.GetPlace:input_type -> ryden.places.v1.GetPlaceRequest
-	5,  // 10: ryden.places.v1.PlaceService.ListPlaces:input_type -> ryden.places.v1.ListPlacesRequest
-	2,  // 11: ryden.places.v1.PlaceService.CreatePlace:output_type -> ryden.places.v1.CreatePlaceResponse
-	4,  // 12: ryden.places.v1.PlaceService.GetPlace:output_type -> ryden.places.v1.GetPlaceResponse
-	6,  // 13: ryden.places.v1.PlaceService.ListPlaces:output_type -> ryden.places.v1.ListPlacesResponse
-	11, // [11:14] is the sub-list for method output_type
-	8,  // [8:11] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	14, // 5: ryden.places.v1.Place.created_at:type_name -> google.protobuf.Timestamp
+	14, // 6: ryden.places.v1.Place.updated_at:type_name -> google.protobuf.Timestamp
+	9,  // 7: ryden.places.v1.Place.categories:type_name -> ryden.places.v1.Category
+	1,  // 8: ryden.places.v1.CreatePlaceReportRequest.reason:type_name -> ryden.places.v1.PlaceReportReason
+	13, // 9: ryden.places.v1.CreatePlaceReportResponse.place_report:type_name -> ryden.places.v1.PlaceReport
+	1,  // 10: ryden.places.v1.PlaceReport.reason:type_name -> ryden.places.v1.PlaceReportReason
+	2,  // 11: ryden.places.v1.PlaceReport.status:type_name -> ryden.places.v1.PlaceReportStatus
+	14, // 12: ryden.places.v1.PlaceReport.created_at:type_name -> google.protobuf.Timestamp
+	14, // 13: ryden.places.v1.PlaceReport.resolved_at:type_name -> google.protobuf.Timestamp
+	3,  // 14: ryden.places.v1.PlaceService.CreatePlace:input_type -> ryden.places.v1.CreatePlaceRequest
+	5,  // 15: ryden.places.v1.PlaceService.GetPlace:input_type -> ryden.places.v1.GetPlaceRequest
+	7,  // 16: ryden.places.v1.PlaceService.ListPlaces:input_type -> ryden.places.v1.ListPlacesRequest
+	11, // 17: ryden.places.v1.PlaceService.CreatePlaceReport:input_type -> ryden.places.v1.CreatePlaceReportRequest
+	4,  // 18: ryden.places.v1.PlaceService.CreatePlace:output_type -> ryden.places.v1.CreatePlaceResponse
+	6,  // 19: ryden.places.v1.PlaceService.GetPlace:output_type -> ryden.places.v1.GetPlaceResponse
+	8,  // 20: ryden.places.v1.PlaceService.ListPlaces:output_type -> ryden.places.v1.ListPlacesResponse
+	12, // 21: ryden.places.v1.PlaceService.CreatePlaceReport:output_type -> ryden.places.v1.CreatePlaceReportResponse
+	18, // [18:22] is the sub-list for method output_type
+	14, // [14:18] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_ryden_places_v1_places_proto_init() }
@@ -724,8 +1094,8 @@ func file_ryden_places_v1_places_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ryden_places_v1_places_proto_rawDesc), len(file_ryden_places_v1_places_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   8,
+			NumEnums:      3,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

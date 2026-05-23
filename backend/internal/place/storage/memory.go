@@ -8,13 +8,15 @@ import (
 )
 
 type MemoryStorage struct {
-	places map[string]domain.Place
-	mu     sync.RWMutex
+	places  map[string]domain.Place
+	reports map[string]domain.PlaceReport
+	mu      sync.RWMutex
 }
 
 func NewMemoryStorage() *MemoryStorage {
 	return &MemoryStorage{
-		places: make(map[string]domain.Place),
+		places:  make(map[string]domain.Place),
+		reports: make(map[string]domain.PlaceReport),
 	}
 }
 
@@ -64,4 +66,27 @@ func (s *MemoryStorage) List(ctx context.Context, city string, limit int) ([]dom
 	}
 
 	return places, nil
+}
+
+func (s *MemoryStorage) CreateReport(ctx context.Context, report domain.PlaceReport) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if _, ok := s.places[report.PlaceID]; !ok {
+		return ErrPlaceNotFound
+	}
+
+	if _, ok := s.reports[report.ID]; ok {
+		return ErrPlaceReportAlreadyExists
+	}
+
+	for _, existingReport := range s.reports {
+		if existingReport.PlaceID == report.PlaceID &&
+			existingReport.ReportedByUserID == report.ReportedByUserID {
+			return ErrPlaceReportAlreadyExists
+		}
+	}
+
+	s.reports[report.ID] = report
+	return nil
 }

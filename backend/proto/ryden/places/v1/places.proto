@@ -10,6 +10,7 @@ service PlaceService {
   rpc CreatePlace (CreatePlaceRequest) returns (CreatePlaceResponse);
   rpc GetPlace (GetPlaceRequest) returns (GetPlaceResponse);
   rpc ListPlaces (ListPlacesRequest) returns (ListPlacesResponse);
+  rpc CreatePlaceReport (CreatePlaceReportRequest) returns (CreatePlaceReportResponse);
 }
 
 message CreatePlaceRequest {
@@ -72,4 +73,43 @@ enum PlaceStatus {
   PLACE_STATUS_APPROVED = 2;
   PLACE_STATUS_REJECTED = 3;
   PLACE_STATUS_ARCHIVED = 4;
+}
+
+message CreatePlaceReportRequest {
+  string place_id = 1;
+  string reported_by_user_id = 2;
+  PlaceReportReason reason = 3;
+  string comment = 4;
+}
+
+message CreatePlaceReportResponse {
+  PlaceReport place_report = 1;
+}
+
+message PlaceReport {
+  string id = 1;
+  string place_id = 2;
+  string reported_by_user_id = 3;
+  PlaceReportReason reason = 4;
+  string comment = 5;
+  PlaceReportStatus status = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp resolved_at = 8;
+}
+
+enum PlaceReportReason {
+  PLACE_REPORT_REASON_UNSPECIFIED = 0;
+  PLACE_REPORT_REASON_SPAM = 1;
+  PLACE_REPORT_REASON_OFFENSIVE_CONTENT = 2;
+  PLACE_REPORT_REASON_WRONG_INFO = 3;
+  PLACE_REPORT_REASON_DUPLICATE = 4;
+  PLACE_REPORT_REASON_CLOSED_PLACE = 5;
+  PLACE_REPORT_REASON_OTHER = 6;
+}
+
+enum PlaceReportStatus {
+  PLACE_REPORT_STATUS_UNSPECIFIED = 0;
+  PLACE_REPORT_STATUS_OPEN = 1;
+  PLACE_REPORT_STATUS_RESOLVED = 2;
+  PLACE_REPORT_STATUS_REJECTED = 3;
 }

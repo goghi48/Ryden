@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/goghi48/ryden/internal/place/domain"
@@ -31,6 +32,15 @@ func validCreatePlaceInput() CreatePlaceInput {
 	}
 }
 
+func validCreatePlaceReportInput(placeID string) CreatePlaceReportInput {
+	return CreatePlaceReportInput{
+		PlaceID:          placeID,
+		ReportedByUserID: "22222222-2222-2222-2222-222222222222",
+		Reason:           domain.PlaceReportReasonWrongInfo,
+		Comment:          "wrong address",
+	}
+}
+
 func mustCreatePlace(t *testing.T, placeService *PlaceService, input CreatePlaceInput) domain.Place {
 	t.Helper()
 
@@ -56,7 +66,7 @@ func TestPlaceService_CreatePlace_Success(t *testing.T) {
 	}
 
 	if place.Status != domain.StatusApproved {
-		t.Fatalf("expected status %s, got %s", domain.StatusPendingReview, place.Status)
+		t.Fatalf("expected status %s, got %s", domain.StatusApproved, place.Status)
 	}
 
 	if place.Title != input.Title {
@@ -231,5 +241,137 @@ func TestPlaceService_ListPlaces_RespectsLimit(t *testing.T) {
 
 	if len(places) != 1 {
 		t.Fatalf("expected 1 place, got %d", len(places))
+	}
+}
+
+func TestPlaceService_CreatePlaceReport_Success(t *testing.T) {
+	placeService := newTestPlaceService(t)
+	place := mustCreatePlace(t, placeService, validCreatePlaceInput())
+	input := validCreatePlaceReportInput(place.ID)
+
+	report, err := placeService.CreatePlaceReport(context.Background(), input)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if report.ID == "" {
+		t.Fatal("expected report ID to be generated")
+	}
+
+	if report.PlaceID != input.PlaceID {
+		t.Fatalf("expected place ID %q, got %q", input.PlaceID, report.PlaceID)
+	}
+
+	if report.ReportedByUserID != input.ReportedByUserID {
+		t.Fatalf("expected reported by user ID %q, got %q", input.ReportedByUserID, report.ReportedByUserID)
+	}
+
+	if report.Reason != input.Reason {
+		t.Fatalf("expected reason %q, got %q", input.Reason, report.Reason)
+	}
+
+	if report.Comment != input.Comment {
+		t.Fatalf("expected comment %q, got %q", input.Comment, report.Comment)
+	}
+
+	if report.Status != domain.PlaceReportStatusOpen {
+		t.Fatalf("expected status %q, got %q", domain.PlaceReportStatusOpen, report.Status)
+	}
+
+	if report.CreatedAt.IsZero() {
+		t.Fatal("expected CreatedAt to be set")
+	}
+
+	if report.ResolvedAt != nil {
+		t.Fatal("expected ResolvedAt to be nil")
+	}
+}
+
+func TestPlaceService_CreatePlaceReport_ValidationErrors(t *testing.T) {
+	placeService := newTestPlaceService(t)
+	place := mustCreatePlace(t, placeService, validCreatePlaceInput())
+
+	tests := []struct {
+		name        string
+		mutateInput func(input *CreatePlaceReportInput)
+		expectedErr error
+	}{
+		{
+			name: "invalid place id",
+			mutateInput: func(input *CreatePlaceReportInput) {
+				input.PlaceID = "bad-place-id"
+			},
+			expectedErr: ErrInvalidPlaceID,
+		},
+		{
+			name: "invalid reported by user id",
+			mutateInput: func(input *CreatePlaceReportInput) {
+				input.ReportedByUserID = "bad-user-id"
+			},
+			expectedErr: ErrInvalidReportedByUserID,
+		},
+		{
+			name: "invalid reason",
+			mutateInput: func(input *CreatePlaceReportInput) {
+				input.Reason = ""
+			},
+			expectedErr: ErrInvalidReportReason,
+		},
+		{
+			name: "comment too long",
+			mutateInput: func(input *CreatePlaceReportInput) {
+				input.Comment = strings.Repeat("a", 501)
+			},
+			expectedErr: ErrReportCommentTooLong,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			input := validCreatePlaceReportInput(place.ID)
+			tt.mutateInput(&input)
+
+			_, err := placeService.CreatePlaceReport(context.Background(), input)
+			if err == nil {
+				t.Fatal("expected error, got nil")
+			}
+
+			if !errors.Is(err, tt.expectedErr) {
+				t.Fatalf("expected error %v, got %v", tt.expectedErr, err)
+			}
+		})
+	}
+}
+
+func TestPlaceService_CreatePlaceReport_PlaceNotFound(t *testing.T) {
+	placeService := newTestPlaceService(t)
+	input := validCreatePlaceReportInput("99999999-9999-9999-9999-999999999999")
+
+	_, err := placeService.CreatePlaceReport(context.Background(), input)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !errors.Is(err, storage.ErrPlaceNotFound) {
+		t.Fatalf("expected error %v, got %v", storage.ErrPlaceNotFound, err)
+	}
+}
+
+func TestPlaceService_CreatePlaceReport_DuplicateUserPerPlace(t *testing.T) {
+	placeService := newTestPlaceService(t)
+	place := mustCreatePlace(t, placeService, validCreatePlaceInput())
+	input := validCreatePlaceReportInput(place.ID)
+
+	if _, err := placeService.CreatePlaceReport(context.Background(), input); err != nil {
+		t.Fatalf("expected no error while creating first report, got %v", err)
+	}
+
+	_, err := placeService.CreatePlaceReport(context.Background(), input)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !errors.Is(err, storage.ErrPlaceReportAlreadyExists) {
+		t.Fatalf("expected error %v, got %v", storage.ErrPlaceReportAlreadyExists, err)
 	}
 }

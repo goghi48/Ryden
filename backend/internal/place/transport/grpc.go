@@ -21,10 +21,7 @@ func NewHandler(placeService *service.PlaceService) *Handler {
 	}
 }
 
-func (h *Handler) CreatePlace(
-	ctx context.Context,
-	req *placesv1.CreatePlaceRequest,
-) (*placesv1.CreatePlaceResponse, error) {
+func (h *Handler) CreatePlace(ctx context.Context, req *placesv1.CreatePlaceRequest) (*placesv1.CreatePlaceResponse, error) {
 	input := service.CreatePlaceInput{
 		Title:           req.GetTitle(),
 		Description:     req.GetDescription(),
@@ -79,10 +76,7 @@ func placeStatusToProto(status domain.PlaceStatus) placesv1.PlaceStatus {
 	}
 }
 
-func (h *Handler) GetPlace(
-	ctx context.Context,
-	req *placesv1.GetPlaceRequest,
-) (*placesv1.GetPlaceResponse, error) {
+func (h *Handler) GetPlace(ctx context.Context, req *placesv1.GetPlaceRequest) (*placesv1.GetPlaceResponse, error) {
 	place, err := h.placeService.GetPlace(ctx, req.GetId())
 
 	if err != nil {
@@ -94,10 +88,7 @@ func (h *Handler) GetPlace(
 	}, nil
 }
 
-func (h *Handler) ListPlaces(
-	ctx context.Context,
-	req *placesv1.ListPlacesRequest,
-) (*placesv1.ListPlacesResponse, error) {
+func (h *Handler) ListPlaces(ctx context.Context, req *placesv1.ListPlacesRequest) (*placesv1.ListPlacesResponse, error) {
 	places, err := h.placeService.ListPlaces(ctx, req.GetCity(), int(req.GetLimit()))
 	if err != nil {
 		return nil, mapErrorToStatus(err)
@@ -112,6 +103,93 @@ func (h *Handler) ListPlaces(
 	return &placesv1.ListPlacesResponse{
 		Places: protoPlaces,
 	}, nil
+}
+
+func (h *Handler) CreatePlaceReport(ctx context.Context, req *placesv1.CreatePlaceReportRequest) (*placesv1.CreatePlaceReportResponse, error) {
+	input := service.CreatePlaceReportInput{
+		PlaceID:          req.GetPlaceId(),
+		ReportedByUserID: req.GetReportedByUserId(),
+		Reason:           protoReportReasonToDomain(req.GetReason()),
+		Comment:          req.GetComment(),
+	}
+
+	report, err := h.placeService.CreatePlaceReport(ctx, input)
+	if err != nil {
+		return nil, mapErrorToStatus(err)
+	}
+
+	return &placesv1.CreatePlaceReportResponse{
+		PlaceReport: placeReportToProto(report),
+	}, nil
+}
+
+func protoReportReasonToDomain(reason placesv1.PlaceReportReason) domain.PlaceReportReason {
+	switch reason {
+	case placesv1.PlaceReportReason_PLACE_REPORT_REASON_SPAM:
+		return domain.PlaceReportReasonSpam
+	case placesv1.PlaceReportReason_PLACE_REPORT_REASON_OFFENSIVE_CONTENT:
+		return domain.PlaceReportReasonOffensiveContent
+	case placesv1.PlaceReportReason_PLACE_REPORT_REASON_WRONG_INFO:
+		return domain.PlaceReportReasonWrongInfo
+	case placesv1.PlaceReportReason_PLACE_REPORT_REASON_DUPLICATE:
+		return domain.PlaceReportReasonDuplicate
+	case placesv1.PlaceReportReason_PLACE_REPORT_REASON_CLOSED_PLACE:
+		return domain.PlaceReportReasonClosedPlace
+	case placesv1.PlaceReportReason_PLACE_REPORT_REASON_OTHER:
+		return domain.PlaceReportReasonOther
+	default:
+		return ""
+	}
+}
+
+func reportReasonToProto(reason domain.PlaceReportReason) placesv1.PlaceReportReason {
+	switch reason {
+	case domain.PlaceReportReasonSpam:
+		return placesv1.PlaceReportReason_PLACE_REPORT_REASON_SPAM
+	case domain.PlaceReportReasonOffensiveContent:
+		return placesv1.PlaceReportReason_PLACE_REPORT_REASON_OFFENSIVE_CONTENT
+	case domain.PlaceReportReasonWrongInfo:
+		return placesv1.PlaceReportReason_PLACE_REPORT_REASON_WRONG_INFO
+	case domain.PlaceReportReasonDuplicate:
+		return placesv1.PlaceReportReason_PLACE_REPORT_REASON_DUPLICATE
+	case domain.PlaceReportReasonClosedPlace:
+		return placesv1.PlaceReportReason_PLACE_REPORT_REASON_CLOSED_PLACE
+	case domain.PlaceReportReasonOther:
+		return placesv1.PlaceReportReason_PLACE_REPORT_REASON_OTHER
+	default:
+		return placesv1.PlaceReportReason_PLACE_REPORT_REASON_UNSPECIFIED
+	}
+}
+
+func placeReportToProto(report domain.PlaceReport) *placesv1.PlaceReport {
+	protoReport := &placesv1.PlaceReport{
+		Id:               report.ID,
+		PlaceId:          report.PlaceID,
+		ReportedByUserId: report.ReportedByUserID,
+		Reason:           reportReasonToProto(report.Reason),
+		Comment:          report.Comment,
+		Status:           reportStatusToProto(report.Status),
+		CreatedAt:        timestamppb.New(report.CreatedAt),
+	}
+
+	if report.ResolvedAt != nil {
+		protoReport.ResolvedAt = timestamppb.New(*report.ResolvedAt)
+	}
+
+	return protoReport
+}
+
+func reportStatusToProto(status domain.PlaceReportStatus) placesv1.PlaceReportStatus {
+	switch status {
+	case domain.PlaceReportStatusOpen:
+		return placesv1.PlaceReportStatus_PLACE_REPORT_STATUS_OPEN
+	case domain.PlaceReportStatusResolved:
+		return placesv1.PlaceReportStatus_PLACE_REPORT_STATUS_RESOLVED
+	case domain.PlaceReportStatusRejected:
+		return placesv1.PlaceReportStatus_PLACE_REPORT_STATUS_REJECTED
+	default:
+		return placesv1.PlaceReportStatus_PLACE_REPORT_STATUS_UNSPECIFIED
+	}
 }
 
 func categoriesToProto(categories []domain.Category) []*placesv1.Category {
