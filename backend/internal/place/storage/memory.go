@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/goghi48/ryden/internal/place/domain"
 )
@@ -109,4 +110,36 @@ func countOpenReportsByPlaceID(reports map[string]domain.PlaceReport, placeID st
 	}
 
 	return count
+}
+
+func (s *MemoryStorage) ApprovePlace(ctx context.Context, id string, resolvedAt time.Time) (domain.Place, error) {
+	return s.updatePlaceStatusAndResolveReports(id, domain.StatusApproved, resolvedAt)
+}
+
+func (s *MemoryStorage) ArchivePlace(ctx context.Context, id string, resolvedAt time.Time) (domain.Place, error) {
+	return s.updatePlaceStatusAndResolveReports(id, domain.StatusArchived, resolvedAt)
+}
+
+func (s *MemoryStorage) updatePlaceStatusAndResolveReports(id string, status domain.PlaceStatus, resolvedAt time.Time) (domain.Place, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	place, ok := s.places[id]
+	if !ok {
+		return domain.Place{}, ErrPlaceNotFound
+	}
+
+	place.Status = status
+	place.UpdatedAt = resolvedAt
+	s.places[id] = place
+
+	for reportID, report := range s.reports {
+		if report.PlaceID == id && report.Status == domain.PlaceReportStatusOpen {
+			report.Status = domain.PlaceReportStatusResolved
+			report.ResolvedAt = &resolvedAt
+			s.reports[reportID] = report
+		}
+	}
+
+	return place, nil
 }

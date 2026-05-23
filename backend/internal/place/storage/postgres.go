@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/goghi48/ryden/internal/place/domain"
 	"github.com/jackc/pgx/v5"
@@ -430,4 +431,102 @@ func mapPostgresCreateReportError(err error) error {
 	default:
 		return err
 	}
+}
+
+func (s *PostgresStorage) ApprovePlace(ctx context.Context, id string, resolvedAt time.Time) (domain.Place, error) {
+	return s.updatePlaceStatusAndResolveReports(ctx, id, domain.StatusApproved, resolvedAt)
+}
+
+func (s *PostgresStorage) ArchivePlace(ctx context.Context, id string, resolvedAt time.Time) (domain.Place, error) {
+	return s.updatePlaceStatusAndResolveReports(ctx, id, domain.StatusArchived, resolvedAt)
+}
+
+func (s *PostgresStorage) updatePlaceStatusAndResolveReports(
+	ctx context.Context,
+	id string,
+	placeStatus domain.PlaceStatus,
+	resolvedAt time.Time,
+) (domain.Place, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return domain.Place{}, err
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+
+	const updatePlaceQuery = `
+		UPDATE places
+		SET status = $1,
+			updated_at = $2
+		WHERE id = $3
+		RETURNING
+			id,
+			title,
+			description,
+			address,
+			city,
+			latitude,
+			longitude,
+			created_by_user_id,
+			status,
+			created_at,
+			updated_at
+	`
+
+	var place domain.Place
+
+	err = tx.QueryRow(ctx, updatePlaceQuery, string(placeStatus), resolvedAt, id).Scan(
+		&place.ID,
+		&place.Title,
+		&place.Description,
+		&place.Address,
+		&place.City,
+		&place.Latitude,
+		&place.Longitude,
+		&place.CreatedByUserID,
+		&place.Status,
+		&place.CreatedAt,
+		&place.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Place{}, ErrPlaceNotFound
+		}
+
+		return domain.Place{}, err
+	}
+
+	const resolveReportsQuery = `
+		UPDATE place_reports
+		SET status = $1,
+			resolved_at = $2
+		WHERE place_id = $3
+			AND status = $4
+	`
+
+	_, err = tx.Exec(
+		ctx,
+		resolveReportsQuery,
+		string(domain.PlaceReportStatusResolved),
+		resolvedAt,
+		id,
+		string(domain.PlaceReportStatusOpen),
+	)
+	if err != nil {
+		return domain.Place{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return domain.Place{}, err
+	}
+
+	categories, err := s.getCategoriesByPlaceID(ctx, place.ID)
+	if err != nil {
+		return domain.Place{}, err
+	}
+
+	place.Categories = categories
+
+	return place, nil
 }

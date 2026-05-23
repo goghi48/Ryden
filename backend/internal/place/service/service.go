@@ -14,6 +14,8 @@ type PlaceStorage interface {
 	GetByID(ctx context.Context, id string) (domain.Place, error)
 	List(ctx context.Context, city string, limit int) ([]domain.Place, error)
 	CreateReport(ctx context.Context, report domain.PlaceReport, reviewThreshold int) error
+	ApprovePlace(ctx context.Context, id string, resolvedAt time.Time) (domain.Place, error)
+	ArchivePlace(ctx context.Context, id string, resolvedAt time.Time) (domain.Place, error)
 }
 
 type PlaceService struct {
@@ -121,6 +123,32 @@ func (s *PlaceService) CreatePlaceReport(ctx context.Context, input CreatePlaceR
 	}
 
 	return placeReport, nil
+}
+
+func (s *PlaceService) ApprovePlace(ctx context.Context, id string) (domain.Place, error) {
+	if _, err := uuid.Parse(id); err != nil {
+		return domain.Place{}, ErrInvalidPlaceID
+	}
+
+	place, err := s.storage.ApprovePlace(ctx, id, time.Now())
+	if err != nil {
+		return domain.Place{}, err
+	}
+
+	return place, nil
+}
+
+func (s *PlaceService) ArchivePlace(ctx context.Context, id string) (domain.Place, error) {
+	if _, err := uuid.Parse(id); err != nil {
+		return domain.Place{}, ErrInvalidPlaceID
+	}
+
+	place, err := s.storage.ArchivePlace(ctx, id, time.Now())
+	if err != nil {
+		return domain.Place{}, err
+	}
+
+	return place, nil
 }
 
 func validateCreatePlaceInput(input CreatePlaceInput) error {

@@ -94,3 +94,50 @@ func TestHandler_CreatePlaceReport_DuplicateUserPerPlace(t *testing.T) {
 		t.Fatalf("expected code %s, got %s", codes.AlreadyExists, status.Code(err))
 	}
 }
+
+func TestHandler_ApprovePlace_Success(t *testing.T) {
+	handler := newTestHandler(t)
+	place := mustCreatePlaceViaHandler(t, handler)
+
+	resp, err := handler.ApprovePlace(context.Background(), &placesv1.ApprovePlaceRequest{
+		Id: place.GetId(),
+	})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if resp.GetPlace().GetStatus() != placesv1.PlaceStatus_PLACE_STATUS_APPROVED {
+		t.Fatalf("expected status APPROVED, got %s", resp.GetPlace().GetStatus())
+	}
+}
+
+func TestHandler_ArchivePlace_Success(t *testing.T) {
+	handler := newTestHandler(t)
+	place := mustCreatePlaceViaHandler(t, handler)
+
+	resp, err := handler.ArchivePlace(context.Background(), &placesv1.ArchivePlaceRequest{
+		Id: place.GetId(),
+	})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if resp.GetPlace().GetStatus() != placesv1.PlaceStatus_PLACE_STATUS_ARCHIVED {
+		t.Fatalf("expected status ARCHIVED, got %s", resp.GetPlace().GetStatus())
+	}
+}
+
+func TestHandler_ApprovePlace_InvalidID(t *testing.T) {
+	handler := newTestHandler(t)
+
+	_, err := handler.ApprovePlace(context.Background(), &placesv1.ApprovePlaceRequest{
+		Id: "bad-place-id",
+	})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if status.Code(err) != codes.InvalidArgument {
+		t.Fatalf("expected code %s, got %s", codes.InvalidArgument, status.Code(err))
+	}
+}

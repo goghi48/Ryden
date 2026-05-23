@@ -431,3 +431,49 @@ func TestPlaceService_CreatePlaceReport_DoesNotMarkPlacePendingReviewWhenAutoRev
 		t.Fatalf("expected status %q when auto review disabled, got %q", domain.StatusApproved, foundPlace.Status)
 	}
 }
+
+func TestPlaceService_ApprovePlace_Success(t *testing.T) {
+	memoryStorage := storage.NewMemoryStorage()
+	placeService := NewPlaceServiceWithReportsReviewThreshold(memoryStorage, 1)
+	place := mustCreatePlace(t, placeService, validCreatePlaceInput())
+
+	if _, err := placeService.CreatePlaceReport(context.Background(), validCreatePlaceReportInput(place.ID)); err != nil {
+		t.Fatalf("expected no error while creating report, got %v", err)
+	}
+
+	approvedPlace, err := placeService.ApprovePlace(context.Background(), place.ID)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if approvedPlace.Status != domain.StatusApproved {
+		t.Fatalf("expected status %q, got %q", domain.StatusApproved, approvedPlace.Status)
+	}
+}
+
+func TestPlaceService_ArchivePlace_Success(t *testing.T) {
+	placeService := newTestPlaceService(t)
+	place := mustCreatePlace(t, placeService, validCreatePlaceInput())
+
+	archivedPlace, err := placeService.ArchivePlace(context.Background(), place.ID)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if archivedPlace.Status != domain.StatusArchived {
+		t.Fatalf("expected status %q, got %q", domain.StatusArchived, archivedPlace.Status)
+	}
+}
+
+func TestPlaceService_ApprovePlace_InvalidID(t *testing.T) {
+	placeService := newTestPlaceService(t)
+
+	_, err := placeService.ApprovePlace(context.Background(), "bad-place-id")
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !errors.Is(err, ErrInvalidPlaceID) {
+		t.Fatalf("expected error %v, got %v", ErrInvalidPlaceID, err)
+	}
+}

@@ -451,3 +451,90 @@ func TestPostgresStorage_CreateReport_MarksPlacePendingReviewWhenThresholdReache
 		t.Fatalf("expected status %q after threshold, got %q", domain.StatusPendingReview, foundPlace.Status)
 	}
 }
+
+func TestPostgresStorage_ApprovePlace_ResolvesOpenReports(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	place := validPlace()
+	if err := storage.Create(ctx, place, nil); err != nil {
+		t.Fatalf("expected no error while creating place, got %v", err)
+	}
+
+	report := validPlaceReport()
+	if err := storage.CreateReport(ctx, report, 1); err != nil {
+		t.Fatalf("expected no error while creating report, got %v", err)
+	}
+
+	approvedPlace, err := storage.ApprovePlace(ctx, place.ID, time.Now())
+	if err != nil {
+		t.Fatalf("expected no error while approving place, got %v", err)
+	}
+	if approvedPlace.Status != domain.StatusApproved {
+		t.Fatalf("expected status %q, got %q", domain.StatusApproved, approvedPlace.Status)
+	}
+
+	assertNoOpenReports(t, storage, place.ID)
+}
+
+func TestPostgresStorage_ArchivePlace_ResolvesOpenReports(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	place := validPlace()
+	if err := storage.Create(ctx, place, nil); err != nil {
+		t.Fatalf("expected no error while creating place, got %v", err)
+	}
+
+	report := validPlaceReport()
+	if err := storage.CreateReport(ctx, report, 3); err != nil {
+		t.Fatalf("expected no error while creating report, got %v", err)
+	}
+
+	archivedPlace, err := storage.ArchivePlace(ctx, place.ID, time.Now())
+	if err != nil {
+		t.Fatalf("expected no error while archiving place, got %v", err)
+	}
+	if archivedPlace.Status != domain.StatusArchived {
+		t.Fatalf("expected status %q, got %q", domain.StatusArchived, archivedPlace.Status)
+	}
+
+	assertNoOpenReports(t, storage, place.ID)
+}
+
+func TestPostgresStorage_ApprovePlace_NotFound(t *testing.T) {
+	ctx := context.Background()
+	storage := newTestPostgresStorage(t)
+
+	_, err := storage.ApprovePlace(ctx, "99999999-9999-9999-9999-999999999999", time.Now())
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
+	if !errors.Is(err, ErrPlaceNotFound) {
+		t.Fatalf("expected error %v, got %v", ErrPlaceNotFound, err)
+	}
+}
+
+func assertNoOpenReports(t *testing.T, storage *PostgresStorage, placeID string) {
+	t.Helper()
+
+	var count int
+	err := storage.pool.QueryRow(
+		context.Background(),
+		`
+			SELECT count(*)
+			FROM place_reports
+			WHERE place_id = $1
+				AND status = 'OPEN'
+		`,
+		placeID,
+	).Scan(&count)
+	if err != nil {
+		t.Fatalf("failed to count open reports: %v", err)
+	}
+
+	if count != 0 {
+		t.Fatalf("expected 0 open reports, got %d", count)
+	}
+}

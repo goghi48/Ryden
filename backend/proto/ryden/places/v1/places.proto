@@ -11,6 +11,8 @@ service PlaceService {
   rpc GetPlace (GetPlaceRequest) returns (GetPlaceResponse);
   rpc ListPlaces (ListPlacesRequest) returns (ListPlacesResponse);
   rpc CreatePlaceReport (CreatePlaceReportRequest) returns (CreatePlaceReportResponse);
+  rpc ApprovePlace (ApprovePlaceRequest) returns (ApprovePlaceResponse);
+  rpc ArchivePlace (ArchivePlaceRequest) returns (ArchivePlaceResponse);
 }
 
 message CreatePlaceRequest {
@@ -43,6 +45,22 @@ message ListPlacesRequest {
 
 message ListPlacesResponse {
   repeated Place places = 1;
+}
+
+message ApprovePlaceRequest {
+  string id = 1;
+}
+
+message ApprovePlaceResponse {
+  Place place = 1;
+}
+
+message ArchivePlaceRequest {
+  string id = 1;
+}
+
+message ArchivePlaceResponse {
+  Place place = 1;
 }
 
 message Category {

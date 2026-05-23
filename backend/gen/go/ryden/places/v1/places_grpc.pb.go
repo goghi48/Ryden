@@ -23,6 +23,8 @@ const (
 	PlaceService_GetPlace_FullMethodName          = "/ryden.places.v1.PlaceService/GetPlace"
 	PlaceService_ListPlaces_FullMethodName        = "/ryden.places.v1.PlaceService/ListPlaces"
 	PlaceService_CreatePlaceReport_FullMethodName = "/ryden.places.v1.PlaceService/CreatePlaceReport"
+	PlaceService_ApprovePlace_FullMethodName      = "/ryden.places.v1.PlaceService/ApprovePlace"
+	PlaceService_ArchivePlace_FullMethodName      = "/ryden.places.v1.PlaceService/ArchivePlace"
 )
 
 // PlaceServiceClient is the client API for PlaceService service.
@@ -33,6 +35,8 @@ type PlaceServiceClient interface {
 	GetPlace(ctx context.Context, in *GetPlaceRequest, opts ...grpc.CallOption) (*GetPlaceResponse, error)
 	ListPlaces(ctx context.Context, in *ListPlacesRequest, opts ...grpc.CallOption) (*ListPlacesResponse, error)
 	CreatePlaceReport(ctx context.Context, in *CreatePlaceReportRequest, opts ...grpc.CallOption) (*CreatePlaceReportResponse, error)
+	ApprovePlace(ctx context.Context, in *ApprovePlaceRequest, opts ...grpc.CallOption) (*ApprovePlaceResponse, error)
+	ArchivePlace(ctx context.Context, in *ArchivePlaceRequest, opts ...grpc.CallOption) (*ArchivePlaceResponse, error)
 }
 
 type placeServiceClient struct {
@@ -83,6 +87,26 @@ func (c *placeServiceClient) CreatePlaceReport(ctx context.Context, in *CreatePl
 	return out, nil
 }
 
+func (c *placeServiceClient) ApprovePlace(ctx context.Context, in *ApprovePlaceRequest, opts ...grpc.CallOption) (*ApprovePlaceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApprovePlaceResponse)
+	err := c.cc.Invoke(ctx, PlaceService_ApprovePlace_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *placeServiceClient) ArchivePlace(ctx context.Context, in *ArchivePlaceRequest, opts ...grpc.CallOption) (*ArchivePlaceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ArchivePlaceResponse)
+	err := c.cc.Invoke(ctx, PlaceService_ArchivePlace_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PlaceServiceServer is the server API for PlaceService service.
 // All implementations must embed UnimplementedPlaceServiceServer
 // for forward compatibility.
@@ -91,6 +115,8 @@ type PlaceServiceServer interface {
 	GetPlace(context.Context, *GetPlaceRequest) (*GetPlaceResponse, error)
 	ListPlaces(context.Context, *ListPlacesRequest) (*ListPlacesResponse, error)
 	CreatePlaceReport(context.Context, *CreatePlaceReportRequest) (*CreatePlaceReportResponse, error)
+	ApprovePlace(context.Context, *ApprovePlaceRequest) (*ApprovePlaceResponse, error)
+	ArchivePlace(context.Context, *ArchivePlaceRequest) (*ArchivePlaceResponse, error)
 	mustEmbedUnimplementedPlaceServiceServer()
 }
 
@@ -112,6 +138,12 @@ func (UnimplementedPlaceServiceServer) ListPlaces(context.Context, *ListPlacesRe
 }
 func (UnimplementedPlaceServiceServer) CreatePlaceReport(context.Context, *CreatePlaceReportRequest) (*CreatePlaceReportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreatePlaceReport not implemented")
+}
+func (UnimplementedPlaceServiceServer) ApprovePlace(context.Context, *ApprovePlaceRequest) (*ApprovePlaceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApprovePlace not implemented")
+}
+func (UnimplementedPlaceServiceServer) ArchivePlace(context.Context, *ArchivePlaceRequest) (*ArchivePlaceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ArchivePlace not implemented")
 }
 func (UnimplementedPlaceServiceServer) mustEmbedUnimplementedPlaceServiceServer() {}
 func (UnimplementedPlaceServiceServer) testEmbeddedByValue()                      {}
@@ -206,6 +238,42 @@ func _PlaceService_CreatePlaceReport_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlaceService_ApprovePlace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApprovePlaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlaceServiceServer).ApprovePlace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PlaceService_ApprovePlace_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlaceServiceServer).ApprovePlace(ctx, req.(*ApprovePlaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlaceService_ArchivePlace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ArchivePlaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlaceServiceServer).ArchivePlace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PlaceService_ArchivePlace_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlaceServiceServer).ArchivePlace(ctx, req.(*ArchivePlaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PlaceService_ServiceDesc is the grpc.ServiceDesc for PlaceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +296,14 @@ var PlaceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreatePlaceReport",
 			Handler:    _PlaceService_CreatePlaceReport_Handler,
+		},
+		{
+			MethodName: "ApprovePlace",
+			Handler:    _PlaceService_ApprovePlace_Handler,
+		},
+		{
+			MethodName: "ArchivePlace",
+			Handler:    _PlaceService_ArchivePlace_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

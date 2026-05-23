@@ -105,6 +105,28 @@ func (h *Handler) ListPlaces(ctx context.Context, req *placesv1.ListPlacesReques
 	}, nil
 }
 
+func (h *Handler) ApprovePlace(ctx context.Context, req *placesv1.ApprovePlaceRequest) (*placesv1.ApprovePlaceResponse, error) {
+	place, err := h.placeService.ApprovePlace(ctx, req.GetId())
+	if err != nil {
+		return nil, mapErrorToStatus(err)
+	}
+
+	return &placesv1.ApprovePlaceResponse{
+		Place: placeToProto(place),
+	}, nil
+}
+
+func (h *Handler) ArchivePlace(ctx context.Context, req *placesv1.ArchivePlaceRequest) (*placesv1.ArchivePlaceResponse, error) {
+	place, err := h.placeService.ArchivePlace(ctx, req.GetId())
+	if err != nil {
+		return nil, mapErrorToStatus(err)
+	}
+
+	return &placesv1.ArchivePlaceResponse{
+		Place: placeToProto(place),
+	}, nil
+}
+
 func (h *Handler) CreatePlaceReport(ctx context.Context, req *placesv1.CreatePlaceReportRequest) (*placesv1.CreatePlaceReportResponse, error) {
 	input := service.CreatePlaceReportInput{
 		PlaceID:          req.GetPlaceId(),
