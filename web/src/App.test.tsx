@@ -1,10 +1,11 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import type { Meeting, TimeOption } from "./api";
 
 describe("App", () => {
   beforeEach(() => {
+    vi.setSystemTime(new Date("2026-07-28T00:00:00Z"));
     cleanup();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -25,6 +26,10 @@ describe("App", () => {
       configurable: true,
       value: vi.fn(),
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("shows the private account entry after session bootstrap fails", async () => {
