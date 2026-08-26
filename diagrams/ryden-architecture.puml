@@ -1,0 +1,39 @@
+@startuml
+title Ryden deployment overview
+
+skinparam backgroundColor transparent
+skinparam shadowing false
+skinparam roundcorner 12
+skinparam defaultFontName Arial
+skinparam ArrowColor #59636E
+skinparam rectangle {
+  BorderColor #59636E
+  BackgroundColor #F6F8FA
+  FontColor #24292F
+}
+skinparam database {
+  BorderColor #59636E
+  BackgroundColor #FFF1E8
+  FontColor #24292F
+}
+
+actor "User" as user
+rectangle "React + nginx" as web
+
+rectangle "Go modular monolith" as api {
+  rectangle "Auth" as auth
+  rectangle "Meetings" as meetings
+  rectangle "Polls and votes" as polls
+  rectangle "Preparation" as preparation
+}
+
+database "PostgreSQL\nsource of truth" as postgres
+rectangle "Prometheus metrics" as metrics
+
+user --> web : HTTPS
+web --> api : REST API
+web --> api : SSE updates
+api --> postgres : pgx / SQL
+api --> metrics : /metrics
+
+@enduml
